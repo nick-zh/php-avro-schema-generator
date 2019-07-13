@@ -1,0 +1,8 @@
+{
+  "autoload": {
+    "psr-4": {
+      "NickZh\\PhpAvroSchemaGenerator\\": "src/",
+      "NickZh\\PhpAvroSchemaGenerator\\Tests\\": "tests/"
+    }
+  }
+}
