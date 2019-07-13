@@ -1,16 +1,19 @@
 # Avro schema generator for PHP
 Since avro does not support subschemas, this is just a small
-helper unify your split schema.
+helper to unify your subschema schema.
 
 ```
+$registry = (new SchemaRegistryLoader())
+    ->addSchemaTemplateDirectory('./schemaTemplates')
+    ->load();
+
 $generator = SchemaGenerator::create()
-    ->setOutputDirectory('./foo')
-    ->addInputDirectory(('./schema'))
-    ->addSchemaFile('./schema/Library.avsc');
+    ->setSchemaRegistry($registry)
+    ->setOutputDirectory('./schema');
 
 $generator->generateSchema();
+
 ```
 
-- Input directories: directories containing avsc files
-- Schema files: Schema files that should be unified
+- Schema template directories: directories containing avsc template files (with subschema)
 - Output directory: output directory for the unified schema files

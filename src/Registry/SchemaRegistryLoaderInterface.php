@@ -10,10 +10,10 @@ interface SchemaRegistryLoaderInterface
 {
 
     /**
-     * @param string $inputDirectory
+     * @param string $schemaTemplateDirectory
      * @return SchemaRegistryLoaderInterface
      */
-    public function addSchemaDirectory(string $inputDirectory): SchemaRegistryLoaderInterface;
+    public function addSchemaTemplateDirectory(string $schemaTemplateDirectory): SchemaRegistryLoaderInterface;
 
     /**
      * @return array

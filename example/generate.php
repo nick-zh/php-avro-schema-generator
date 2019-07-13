@@ -8,7 +8,7 @@ use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryLoader;
 use NickZh\PhpAvroSchemaGenerator\Generator\SchemaGenerator;
 
 $registry = (new SchemaRegistryLoader())
-    ->addSchemaDirectory('./schemaTemplates')
+    ->addSchemaTemplateDirectory('./schemaTemplates')
     ->load();
 
 $generator = SchemaGenerator::create()

@@ -30,12 +30,12 @@ final class SchemaRegistryLoader implements SchemaRegistryLoaderInterface
 
 
     /**
-     * @param string $inputDirectory
+     * @param string $schemaTemplateDirectory
      * @return SchemaRegistryLoaderInterface
      */
-    public function addSchemaDirectory(string $inputDirectory): SchemaRegistryLoaderInterface
+    public function addSchemaTemplateDirectory(string $schemaTemplateDirectory): SchemaRegistryLoaderInterface
     {
-        $this->schemaDirectories[$inputDirectory] = 1;
+        $this->schemaDirectories[$schemaTemplateDirectory] = 1;
 
         return $this;
     }
