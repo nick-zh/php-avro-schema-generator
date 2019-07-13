@@ -11,6 +11,6 @@ $generator = SchemaGenerator::create()
 $generator->generateSchema();
 ```
 
-Input directories: directories containing avsc files
-Schema files: Schema files that should be unified
-Output directory: output directory for the unified schema files
+- Input directories: directories containing avsc files
+- Schema files: Schema files that should be unified
+- Output directory: output directory for the unified schema files
