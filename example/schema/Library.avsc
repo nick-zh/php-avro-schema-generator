@@ -1,10 +1,1 @@
-{
-    "type": "record",
-    "namespace": "com.example",
-    "name": "Library",
-    "fields": [
-        { "name": "name", "type": "string" },
-        { "name": "foundingYear", "type": ["null", "int"], "default": null },
-        { "name": "collection", "type": {"type": "array", "items": "com.example.Collection" }, "default": [] }
-    ]
-}
+{"type":"record","namespace":"com.example","name":"Library","fields":[{"name":"name","type":"string"},{"name":"foundingYear","type":["null","int"],"default":null},{"name":"collection","type":{"type":"array","items":{"type":"record","namespace":"com.example","name":"Collection","fields":[{"name":"name","type":"string"},{"name":"items","type":{"type":"array","items":{"type":"record","namespace":"com.example","name":"Book","fields":[{"name":"title","type":"string"},{"name":"author","type":"string"},{"name":"items","type":{"type":"array","items":{"type":"record","namespace":"com.example","name":"Page","fields":[{"name":"number","type":"int"},{"name":"content","type":"string"}]}},"default":[]}]}},"default":[]}]}},"default":[]}]}

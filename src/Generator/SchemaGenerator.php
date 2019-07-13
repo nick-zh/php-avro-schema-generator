@@ -5,113 +5,96 @@ declare(strict_types=1);
 namespace NickZh\PhpAvroSchemaGenerator\Generator;
 
 use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistry;
+use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryLoaderInterface;
+use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 
-class SchemaGenerator
+final class SchemaGenerator implements SchemaGeneratorInterface
 {
+
     /**
      * @var string
      */
-    private $outputDirectory;
+    private $outputDirectory = '/tmp';
 
     /**
-     * @var array
+     * @var SchemaRegistryLoaderInterface
      */
-    private $inputDirectories = [];
-
-    /**
-     * @var array
-     */
-    private $schemaFiles = [];
+    private $schemaRegistry;
 
     /**
      * @return SchemaGenerator
      */
-    public static function create(): self
+    public static function create(): SchemaGeneratorInterface
     {
         return new self();
     }
 
     /**
-     * @param string $inputDirectory
-     * @return $this
+     * @param SchemaRegistryLoaderInterface $schemaRegistry
+     * @return SchemaGeneratorInterface
      */
-    public function addInputDirectory(string $inputDirectory)
+    public function setSchemaRegistry(SchemaRegistryLoaderInterface $schemaRegistry): SchemaGeneratorInterface
     {
-        $this->inputDirectories[$inputDirectory] = 1;
+        $this->schemaRegistry = $schemaRegistry;
 
         return $this;
     }
 
     /**
-     * @return array
+     * @return SchemaRegistryLoaderInterface|null
      */
-    public function getInputDirectories(): array
+    public function getSchemaRegistry(): ?SchemaRegistryLoaderInterface
     {
-        return $this->inputDirectories;
-    }
-
-    /**
-     * @param string $inputDirectory
-     * @return $this
-     */
-    public function addSchemaFile(string $schemaFilePath)
-    {
-        $this->schemaFiles[$schemaFilePath] = 1;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getSchemaFiles(): array
-    {
-        return $this->schemaFiles;
+        return $this->schemaRegistry;
     }
 
     /**
      * @param string $outputDirectory
      * @return $this
      */
-    public function setOutputDirectory(string $outputDirectory)
+    public function setOutputDirectory(string $outputDirectory): SchemaGeneratorInterface
     {
         $this->outputDirectory = $outputDirectory;
 
         return $this;
     }
 
-    public function getOutputDirectory()
+    /**
+     * @return string
+     */
+    public function getOutputDirectory(): string
     {
         return $this->outputDirectory;
     }
 
     /**
-     * @param SchemaRegistry $registry
-     * @param array $schemaData
+     * @param SchemaTemplateInterface $schemaTemplate
      * @return array
      */
-    public function resolveSchema(SchemaRegistry $registry, array $schemaData)
+    public function resolveSchemaTemplate(SchemaTemplateInterface $schemaTemplate): array
     {
-        foreach($schemaData['fields'] as $idx => $field) {
-            if(true === is_array($field['type'])) {
+        $schemaData = $schemaTemplate->getSchemaDefinition();
+
+        foreach ($schemaData['fields'] as $idx => $field) {
+            if (true === is_array($field['type'])) {
                 $type = 'amazing';
-                if(true === isset($field['type']['items'])) {
+                if (true === isset($field['type']['items'])) {
                     $type = $field['type']['items'];
                 }
             } else {
                 $type = $field['type'];
             }
 
-            $resolvedSchema = $registry->getSchemaAsArray($type);
+            $resolvedSchema = $this->getSchemaRegistry()->getSchemaById($type);
 
-            if(null === $resolvedSchema) {
+            if (null === $resolvedSchema) {
                 continue;
             }
 
-            if(true === is_array($field['type'])) {
-                $schemaData['fields'][$idx]['type']['items'] = $this->resolveSchema($registry, $resolvedSchema);
+            if (true === is_array($field['type'])) {
+                $schemaData['fields'][$idx]['type']['items'] = $this->resolveSchemaTemplate($resolvedSchema);
             } else {
-                $schemaData['fields'][$idx]['type'] = $this->resolveSchema($registry, $resolvedSchema);
+                $schemaData['fields'][$idx]['type'] = $this->resolveSchemaTemplate($resolvedSchema);
             }
 
         }
@@ -119,26 +102,35 @@ class SchemaGenerator
         return $schemaData;
     }
 
-    public function generateSchema()
-    {
-        $registry = new SchemaRegistry($this->getInputDirectories());
-        $registry->load();
 
-        foreach ($this->getSchemaFiles() as $schemaFilePath => $loneliestNumber) {
-            $schemaData = json_decode(file_get_contents($schemaFilePath), true);
-            $schemaData = $this->resolveSchema($registry, $schemaData);
-            $this->saveSchema($schemaData);
+    /**
+     * @return void
+     */
+    public function generateSchema(): void
+    {
+        $registry = $this->getSchemaRegistry();
+
+        if (null === $registry) {
+            return;
+        }
+
+        /** @var SchemaTemplateInterface $schemaTemplate */
+        foreach ($registry->getRootSchema() as $schemaTemplate) {
+            $schemaData = $this->resolveSchemaTemplate($schemaTemplate);
+            unset($schemaData['schema_level']);
+            $this->exportSchema($schemaData);
         }
     }
 
     /**
      * @param array $schemaData
+     * @return void
      */
-    public function saveSchema(array $schemaData)
+    public function exportSchema(array $schemaData): void
     {
         $schemaFilename = $schemaData['name'] . '.avsc';
 
-        if(false === file_exists($this->getOutputDirectory())) {
+        if (false === file_exists($this->getOutputDirectory())) {
             mkdir($this->getOutputDirectory());
         }
 
