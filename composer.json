@@ -1,4 +1,12 @@
 {
+  "name": "nick-zh/php-avro-schema-generator",
+  "description": "PHP avro schema generator for subschema",
+  "keywords": [
+    "php",
+    "kafka",
+    "messaging"
+  ],
+  "license": "MIT",
   "require-dev": {
     "phpunit/phpunit": "^8.2.4",
     "phpstan/phpstan": "^0.11.12"
