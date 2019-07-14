@@ -1,4 +1,8 @@
 {
+  "require-dev": {
+    "phpunit/phpunit": "^8.2.4",
+    "phpstan/phpstan": "^0.11.12"
+  },
   "autoload": {
     "psr-4": {
       "NickZh\\PhpAvroSchemaGenerator\\": "src/",
