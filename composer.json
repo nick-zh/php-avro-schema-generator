@@ -2,9 +2,9 @@
   "name": "nick-zh/php-avro-schema-generator",
   "description": "PHP avro schema generator for subschema",
   "keywords": [
-    "php",
-    "kafka",
-    "messaging"
+    "avro",
+    "avro-schema",
+    "subschema"
   ],
   "license": "MIT",
   "require-dev": {
