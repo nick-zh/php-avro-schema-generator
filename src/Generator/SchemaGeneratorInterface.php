@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace NickZh\PhpAvroSchemaGenerator\Generator;
 
-use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistry;
-use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryLoaderInterface;
+use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 
 interface SchemaGeneratorInterface
@@ -17,42 +16,37 @@ interface SchemaGeneratorInterface
     public static function create(): SchemaGeneratorInterface;
 
     /**
-     * @param SchemaRegistryLoaderInterface $schemaRegistry
+     * @param SchemaRegistryInterface $schemaRegistry
      * @return SchemaGeneratorInterface
      */
-    public function setSchemaRegistry(SchemaRegistryLoaderInterface $schemaRegistry): SchemaGeneratorInterface;
+    public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaGeneratorInterface;
 
     /**
-     * @return SchemaRegistryLoaderInterface|null
+     * @return SchemaRegistryInterface|null
      */
-    public function getSchemaRegistry(): ?SchemaRegistryLoaderInterface;
-
-    /**
-     * @param string $outputDirectory
-     * @return $this
-     */
-    public function setOutputDirectory(string $outputDirectory): SchemaGeneratorInterface;
-
-    /**
-     * @return string
-     */
-    public function getOutputDirectory(): string;
+    public function getSchemaRegistry(): ?SchemaRegistryInterface;
 
     /**
      * @param SchemaTemplateInterface $schemaTemplate
+     * @return SchemaTemplateInterface
+     */
+    public function resolveSchemaTemplate(SchemaTemplateInterface $schemaTemplate): SchemaTemplateInterface;
+
+    /**
+     * @return void
+     */
+    public function generateSchemas(): void;
+
+    /**
+     * @param SchemaTemplateInterface $schemaTemplate
+     * @return void
+     */
+    public function exportSchema(SchemaTemplateInterface $schemaTemplate): void;
+
+    /**
+     * @param array $schemaDefinition
      * @return array
      */
-    public function resolveSchemaTemplate(SchemaTemplateInterface $schemaTemplate): array;
-
-    /**
-     * @return void
-     */
-    public function generateSchema(): void;
-
-    /**
-     * @param array $schemaData
-     * @return void
-     */
-    public function exportSchema(array $schemaData): void;
+    public function transformExportSchemaDefinition(array $schemaDefinition): array;
 
 }

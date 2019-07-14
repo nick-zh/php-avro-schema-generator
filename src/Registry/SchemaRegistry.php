@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace NickZh\PhpAvroSchemaGenerator\Registry;
 
 use \FilesystemIterator;
+use NickZh\PhpAvroSchemaGenerator\Avro\Avro;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplate;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 use \RecursiveDirectoryIterator;
 use \RecursiveIteratorIterator;
 use \SplFileInfo;
 
-final class SchemaRegistryLoader implements SchemaRegistryLoaderInterface
+final class SchemaRegistry implements SchemaRegistryInterface
 {
 
     const SCHEMA_LEVEL_ROOT = 'root';
     const SCHEMA_LEVEL_CHILD = 'child';
-    const AVRO_FILE_EXTENSION = 'avsc';
 
     /**
      * @var array
@@ -31,9 +31,9 @@ final class SchemaRegistryLoader implements SchemaRegistryLoaderInterface
 
     /**
      * @param string $schemaTemplateDirectory
-     * @return SchemaRegistryLoaderInterface
+     * @return SchemaRegistryInterface
      */
-    public function addSchemaTemplateDirectory(string $schemaTemplateDirectory): SchemaRegistryLoaderInterface
+    public function addSchemaTemplateDirectory(string $schemaTemplateDirectory): SchemaRegistryInterface
     {
         $this->schemaDirectories[$schemaTemplateDirectory] = 1;
 
@@ -43,7 +43,7 @@ final class SchemaRegistryLoader implements SchemaRegistryLoaderInterface
     /**
      * @return array
      */
-    public function getRootSchema(): array
+    public function getRootSchemas(): array
     {
         $rootSchema = [];
 
@@ -66,9 +66,9 @@ final class SchemaRegistryLoader implements SchemaRegistryLoaderInterface
     }
 
     /**
-     * @return SchemaRegistryLoaderInterface
+     * @return SchemaRegistryInterface
      */
-    public function load(): SchemaRegistryLoaderInterface
+    public function load(): SchemaRegistryInterface
     {
         foreach ($this->getSchemaDirectories() as $directory => $loneliestNumber) {
             $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(
@@ -78,7 +78,7 @@ final class SchemaRegistryLoader implements SchemaRegistryLoaderInterface
 
             /** @var SplFileInfo $file */
             foreach ($iterator as $file) {
-                if (self::AVRO_FILE_EXTENSION === $file->getExtension()) {
+                if (Avro::FILE_EXTENSION === $file->getExtension()) {
                     $this->registerSchemaFile($file);
                 }
             }
@@ -112,7 +112,7 @@ final class SchemaRegistryLoader implements SchemaRegistryLoaderInterface
      * @param \SplFileInfo $fileInfo
      * @return void
      */
-    protected function registerSchemaFile(SplFileInfo $fileInfo): void
+    private function registerSchemaFile(SplFileInfo $fileInfo): void
     {
         $schemaData = json_decode(file_get_contents($fileInfo->getRealPath()), true);
         $this->schemas[$this->getSchemaId($schemaData)] = (new SchemaTemplate())

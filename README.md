@@ -11,7 +11,7 @@ $generator = SchemaGenerator::create()
     ->setSchemaRegistry($registry)
     ->setOutputDirectory('./schema');
 
-$generator->generateSchema();
+$generator->generateSchemas();
 
 ```
 

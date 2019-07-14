@@ -6,19 +6,19 @@ namespace NickZh\PhpAvroSchemaGenerator\Registry;
 
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 
-interface SchemaRegistryLoaderInterface
+interface SchemaRegistryInterface
 {
 
     /**
      * @param string $schemaTemplateDirectory
-     * @return SchemaRegistryLoaderInterface
+     * @return SchemaRegistryInterface
      */
-    public function addSchemaTemplateDirectory(string $schemaTemplateDirectory): SchemaRegistryLoaderInterface;
+    public function addSchemaTemplateDirectory(string $schemaTemplateDirectory): SchemaRegistryInterface;
 
     /**
      * @return array
      */
-    public function getRootSchema(): array;
+    public function getRootSchemas(): array;
 
     /**
      * @return array
@@ -28,7 +28,7 @@ interface SchemaRegistryLoaderInterface
     /**
      * @return void
      */
-    public function load(): SchemaRegistryLoaderInterface;
+    public function load(): SchemaRegistryInterface;
 
     /**
      * @return array
