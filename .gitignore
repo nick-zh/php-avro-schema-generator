@@ -2,3 +2,4 @@
 vendor/
 example/schema/
 composer.lock
+.phpunit.result.cache
