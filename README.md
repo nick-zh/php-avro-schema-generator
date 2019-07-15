@@ -1,12 +1,12 @@
 # Avro schema generator for PHP
 
-##Installation
+## Installation
 
 ```
 composer require nick-zh/php-avro-schema-generator "^0.1.0"
 ```
 
-##Description
+## Description
 Since avro does not support subschemas, this is just a small
 helper to unify your subschema schema.
 
