@@ -212,4 +212,14 @@ class SchemaMergerTest extends TestCase
         unlink('/tmp/foo/Test.avsc');
         rmdir('/tmp/foo');
     }
+
+    public function testMergeFailsWithNoRegistry()
+    {
+
+        self::expectException(SchemaMergerException::class);
+        self::expectExceptionMessage(SchemaMergerException::NO_SCHEMA_REGISTRY_SET_EXCEPTION_MESSAGE);
+
+        $merger = SchemaMerger::create();
+        $merger->merge();
+    }
 }
