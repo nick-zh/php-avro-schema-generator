@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NickZh\PhpAvroSchemaGenerator\Tests\Unit\Generator;
 
+use NickZh\PhpAvroSchemaGenerator\Exception\SchemaMergerException;
 use NickZh\PhpAvroSchemaGenerator\Merger\SchemaMerger;
 use NickZh\PhpAvroSchemaGenerator\Merger\SchemaMergerInterface;
 use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
@@ -26,8 +27,8 @@ class SchemaMergerTest extends TestCase
 
         $merger = SchemaMerger::create();
 
-        $this->assertInstanceOf(SchemaMergerInterface::class, $merger->setSchemaRegistry($schemaRegistry));
-        $this->assertInstanceOf(SchemaRegistryInterface::class, $merger->getSchemaRegistry());
+        self::assertInstanceOf(SchemaMergerInterface::class, $merger->setSchemaRegistry($schemaRegistry));
+        self::assertInstanceOf(SchemaRegistryInterface::class, $merger->getSchemaRegistry());
     }
 
     public function testSetOutputDirectory()
@@ -104,6 +105,63 @@ class SchemaMergerTest extends TestCase
 
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
         $schemaRegistry->expects(self::once())->method('getSchemaById')->with('someType')->willReturn($childSchemaTemplate);
+
+
+        $merger = SchemaMerger::create()->setSchemaRegistry($schemaRegistry);
+        $merger->resolveSchemaTemplate($schemaTemplate);
+    }
+
+    public function testResolveSchemaTemplateNestedWithNoRegistry()
+    {
+        self::expectException(SchemaMergerException::class);
+        self::expectExceptionMessage(SchemaMergerException::NO_SCHEMA_REGISTRY_SET_EXCEPTION_MESSAGE);
+
+        $schemaDefinition = [
+            'fields' => [
+                [
+                    'type' => [
+                        'type' => 'array',
+                        'items' => 'someType'
+                    ]
+                ],
+                [
+                    'type' => 'string'
+                ]
+            ]
+        ];
+
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
+        $schemaTemplate->expects(self::never())->method('withSchemaDefinition');
+
+        $merger = SchemaMerger::create();
+        $merger->resolveSchemaTemplate($schemaTemplate);
+    }
+
+    public function testResolveSchemaTemplateNestedWitNoRegistryEntry()
+    {
+        self::expectException(SchemaMergerException::class);
+        self::expectExceptionMessage(sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, 'someType'));
+        $schemaDefinition = [
+            'fields' => [
+                [
+                    'type' => [
+                        'type' => 'array',
+                        'items' => 'someType'
+                    ]
+                ],
+                [
+                    'type' => 'string'
+                ]
+            ]
+        ];
+
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
+        $schemaTemplate->expects(self::never())->method('withSchemaDefinition');
+
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $schemaRegistry->expects(self::once())->method('getSchemaById')->with('someType')->willReturn(null);
 
 
         $merger = SchemaMerger::create()->setSchemaRegistry($schemaRegistry);
