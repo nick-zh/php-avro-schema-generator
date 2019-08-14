@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace NickZh\PhpAvroSchemaGenerator\Generator;
+namespace NickZh\PhpAvroSchemaGenerator\Merger;
 
 use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 
-interface SchemaGeneratorInterface
+interface SchemaMergerInterface
 {
 
     /**
-     * @return SchemaGeneratorInterface
+     * @return SchemaMergerInterface
      */
-    public static function create(): SchemaGeneratorInterface;
+    public static function create(): SchemaMergerInterface;
 
     /**
      * @param SchemaRegistryInterface $schemaRegistry
-     * @return SchemaGeneratorInterface
+     * @return SchemaMergerInterface
      */
-    public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaGeneratorInterface;
+    public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaMergerInterface;
 
     /**
      * @return SchemaRegistryInterface|null
@@ -35,7 +35,7 @@ interface SchemaGeneratorInterface
     /**
      * @return void
      */
-    public function generateSchemas(): void;
+    public function merge(): void;
 
     /**
      * @param SchemaTemplateInterface $schemaTemplate

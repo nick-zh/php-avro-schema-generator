@@ -11,7 +11,7 @@ clean:
 	rm -rf ./build ./vendor
 
 code-style:
-	${PHPCS} --report-full --report-gitblame --standard=./vendor/jobcloud/unity-coding-standards/ruleset.xml ./app
+	${PHPCS} --report-full --report-gitblame --standard=PSR2 ./src
 
 coverage:
 	${PHPDBG}

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NickZh\PhpAvroSchemaGenerator\Generator;
+namespace NickZh\PhpAvroSchemaGenerator\Merger;
 
 use NickZh\PhpAvroSchemaGenerator\Avro\Avro;
 use NickZh\PhpAvroSchemaGenerator\Exception\NoSchemaRegistrySet;
@@ -11,7 +11,7 @@ use NickZh\PhpAvroSchemaGenerator\Exception\UnknownSchemaTypeException;
 use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 
-final class SchemaGenerator implements SchemaGeneratorInterface
+final class SchemaMerger implements SchemaMergerInterface
 {
 
     /**
@@ -25,18 +25,18 @@ final class SchemaGenerator implements SchemaGeneratorInterface
     private $schemaRegistry;
 
     /**
-     * @return SchemaGenerator
+     * @return SchemaMerger
      */
-    public static function create(): SchemaGeneratorInterface
+    public static function create(): SchemaMergerInterface
     {
         return new self();
     }
 
     /**
      * @param SchemaRegistryInterface $schemaRegistry
-     * @return SchemaGeneratorInterface
+     * @return SchemaMergerInterface
      */
-    public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaGeneratorInterface
+    public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaMergerInterface
     {
         $this->schemaRegistry = $schemaRegistry;
 
@@ -55,7 +55,7 @@ final class SchemaGenerator implements SchemaGeneratorInterface
      * @param string $outputDirectory
      * @return $this
      */
-    public function setOutputDirectory(string $outputDirectory): SchemaGeneratorInterface
+    public function setOutputDirectory(string $outputDirectory): SchemaMergerInterface
     {
         $this->outputDirectory = $outputDirectory;
 
@@ -126,7 +126,7 @@ final class SchemaGenerator implements SchemaGeneratorInterface
         $typeDefinition = $this->getTypeDefinition($type);
 
         if ($typeDefinition instanceof SchemaTemplateInterface) {
-            return $typeDefinition->getSchemaDefinition();
+            return $this->transformChildSchemaDefinition($typeDefinition->getSchemaDefinition());;
         }
 
         return $type;
@@ -158,7 +158,7 @@ final class SchemaGenerator implements SchemaGeneratorInterface
      * @throws UnknownSchemaTypeException
      * @return void
      */
-    public function generateSchemas(): void
+    public function merge(): void
     {
         $registry = $this->getSchemaRegistry();
 
@@ -201,6 +201,17 @@ final class SchemaGenerator implements SchemaGeneratorInterface
     public function transformExportSchemaDefinition(array $schemaDefinition): array
     {
         unset($schemaDefinition['schema_level']);
+
+        return $schemaDefinition;
+    }
+
+    /**
+     * @param array $schemaDefinition
+     * @return array
+     */
+    public function transformChildSchemaDefinition(array $schemaDefinition): array
+    {
+        unset($schemaDefinition['namespace']);
 
         return $schemaDefinition;
     }

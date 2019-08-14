@@ -11,15 +11,15 @@ Since avro does not support subschemas, this is just a small
 helper to unify your subschema schema.
 
 ```
-$registry = (new SchemaRegistryLoader())
+$registry = (new SchemaRegistr())
     ->addSchemaTemplateDirectory('./schemaTemplates')
     ->load();
 
-$generator = SchemaGenerator::create()
+$merger = SchemaMerger::create()
     ->setSchemaRegistry($registry)
     ->setOutputDirectory('./schema');
 
-$generator->generateSchemas();
+$merger->merge();
 
 ```
 
