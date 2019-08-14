@@ -188,4 +188,28 @@ class SchemaMergerTest extends TestCase
         $merger = SchemaMerger::create();
         $merger->resolveSchemaTemplate($schemaTemplate);
     }
+
+    public function testMerge()
+    {
+        $schemaDefinition = [
+            'name' => 'Test',
+            'fields' => [
+                [
+                    'type' => 'string'
+                ]
+            ]
+        ];
+
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate->expects(self::exactly(2))->method('getSchemaDefinition')->willReturn($schemaDefinition);
+        $schemaTemplate->expects(self::once())->method('withSchemaDefinition')->with($schemaDefinition)->willReturn($schemaTemplate);
+
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $schemaRegistry->expects(self::once())->method('getRootSchemas')->willReturn([$schemaTemplate]);
+
+        $merger = SchemaMerger::create()->setSchemaRegistry($schemaRegistry)->setOutputDirectory('/tmp/foo');
+        $merger->merge();
+        unlink('/tmp/foo/Test.avsc');
+        rmdir('/tmp/foo');
+    }
 }
