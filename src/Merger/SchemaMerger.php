@@ -24,6 +24,10 @@ final class SchemaMerger implements SchemaMergerInterface
      */
     private $schemaRegistry;
 
+    private function __construct()
+    {
+    }
+
     /**
      * @return SchemaMerger
      */

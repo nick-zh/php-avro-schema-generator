@@ -55,7 +55,7 @@ class SubSchemaMergeCommand extends Command
     {
         $result = $path;
         if (0 === strpos($path, './')) {
-            $result = realpath('../' . $path);
+            $result = realpath($path);
         }
 
         if (false === $result || false === is_dir($result)) {
