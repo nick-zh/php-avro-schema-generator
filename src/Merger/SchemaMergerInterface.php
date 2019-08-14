@@ -16,7 +16,7 @@ interface SchemaMergerInterface
     public static function create(): SchemaMergerInterface;
 
     /**
-     * @param SchemaRegistryInterface $schemaRegistry
+     * @param  SchemaRegistryInterface $schemaRegistry
      * @return SchemaMergerInterface
      */
     public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaMergerInterface;
@@ -27,7 +27,7 @@ interface SchemaMergerInterface
     public function getSchemaRegistry(): ?SchemaRegistryInterface;
 
     /**
-     * @param SchemaTemplateInterface $schemaTemplate
+     * @param  SchemaTemplateInterface $schemaTemplate
      * @return SchemaTemplateInterface
      */
     public function resolveSchemaTemplate(SchemaTemplateInterface $schemaTemplate): SchemaTemplateInterface;
@@ -38,15 +38,14 @@ interface SchemaMergerInterface
     public function merge(): void;
 
     /**
-     * @param SchemaTemplateInterface $schemaTemplate
+     * @param  SchemaTemplateInterface $schemaTemplate
      * @return void
      */
     public function exportSchema(SchemaTemplateInterface $schemaTemplate): void;
 
     /**
-     * @param array $schemaDefinition
+     * @param  array $schemaDefinition
      * @return array
      */
     public function transformExportSchemaDefinition(array $schemaDefinition): array;
-
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NickZh\PhpAvroSchemaGenerator\Merger;
 
 use NickZh\PhpAvroSchemaGenerator\Avro\Avro;
-use NickZh\PhpAvroSchemaGenerator\Exception\NoSchemaRegistrySet;
+use NickZh\PhpAvroSchemaGenerator\Exception\SchemaMergerException;
 use NickZh\PhpAvroSchemaGenerator\Exception\SchemaGenerationException;
 use NickZh\PhpAvroSchemaGenerator\Exception\UnknownSchemaTypeException;
 use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
@@ -33,7 +33,7 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param SchemaRegistryInterface $schemaRegistry
+     * @param  SchemaRegistryInterface $schemaRegistry
      * @return SchemaMergerInterface
      */
     public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaMergerInterface
@@ -52,7 +52,7 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param string $outputDirectory
+     * @param  string $outputDirectory
      * @return $this
      */
     public function setOutputDirectory(string $outputDirectory): SchemaMergerInterface
@@ -71,9 +71,9 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param SchemaTemplateInterface $schemaTemplate
+     * @param  SchemaTemplateInterface $schemaTemplate
      * @return SchemaTemplateInterface
-     * @throws UnknownSchemaTypeException
+     * @throws SchemaMergerException
      */
     public function resolveSchemaTemplate(SchemaTemplateInterface $schemaTemplate): SchemaTemplateInterface
     {
@@ -93,9 +93,9 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param mixed $type
+     * @param  mixed $type
      * @return array|string
-     * @throws UnknownSchemaTypeException
+     * @throws SchemaMergerException
      */
     private function getResolvedType($type)
     {
@@ -117,25 +117,25 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param string $type
+     * @param  string $type
      * @return mixed
-     * @throws UnknownSchemaTypeException
+     * @throws SchemaMergerException
      */
     private function getTypeValue(string $type)
     {
         $typeDefinition = $this->getTypeDefinition($type);
 
         if ($typeDefinition instanceof SchemaTemplateInterface) {
-            return $this->transformChildSchemaDefinition($typeDefinition->getSchemaDefinition());;
+            return $this->transformChildSchemaDefinition($typeDefinition->getSchemaDefinition());
         }
 
         return $type;
     }
 
     /**
-     * @param string $type
+     * @param  string $type
      * @return SchemaTemplateInterface|null
-     * @throws UnknownSchemaTypeException
+     * @throws SchemaMergerException
      */
     private function getTypeDefinition(string $type): ?SchemaTemplateInterface
     {
@@ -143,10 +143,19 @@ final class SchemaMerger implements SchemaMergerInterface
             return null;
         }
 
+        if (null === $this->getSchemaRegistry()) {
+            throw new SchemaMergerException(SchemaMergerException::NO_SCHEMA_REGISTRY_SET_EXCEPTION_MESSAGE);
+        }
+
         $schemaTemplate = $this->getSchemaRegistry()->getSchemaById($type);
 
         if (null === $schemaTemplate) {
-            throw new UnknownSchemaTypeException(sprintf('Unknown schema type:%s', $type));
+            throw new SchemaMergerException(
+                sprintf(
+                    SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE,
+                    $type
+                )
+            );
         }
 
         return $this->resolveSchemaTemplate($schemaTemplate);
@@ -154,23 +163,24 @@ final class SchemaMerger implements SchemaMergerInterface
 
 
     /**
-     * @throws NoSchemaRegistrySet
-     * @throws UnknownSchemaTypeException
      * @return void
+     * @throws SchemaMergerException
      */
     public function merge(): void
     {
         $registry = $this->getSchemaRegistry();
 
         if (null === $registry) {
-            throw new NoSchemaRegistrySet('No schema registry set');
+            throw new SchemaMergerException(SchemaMergerException::NO_SCHEMA_REGISTRY_SET_EXCEPTION_MESSAGE);
         }
 
-        /** @var SchemaTemplateInterface $schemaTemplate */
+        /**
+ * @var SchemaTemplateInterface $schemaTemplate
+*/
         foreach ($registry->getRootSchemas() as $schemaTemplate) {
             try {
                 $schemaTemplate = $this->resolveSchemaTemplate($schemaTemplate);
-            } catch (UnknownSchemaTypeException $e) {
+            } catch (SchemaMergerException $e) {
                 throw $e;
             }
             $this->exportSchema($schemaTemplate);
@@ -178,7 +188,7 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param SchemaTemplateInterface $schemaTemplate
+     * @param  SchemaTemplateInterface $schemaTemplate
      * @return void
      */
     public function exportSchema(SchemaTemplateInterface $schemaTemplate): void
@@ -191,11 +201,11 @@ final class SchemaMerger implements SchemaMergerInterface
             mkdir($this->getOutputDirectory());
         }
 
-        file_put_contents($this->getOutputDirectory() . '/' .$schemaFilename, json_encode($schemaDefinition));
+        file_put_contents($this->getOutputDirectory() . '/' . $schemaFilename, json_encode($schemaDefinition));
     }
 
     /**
-     * @param array $schemaDefinition
+     * @param  array $schemaDefinition
      * @return array
      */
     public function transformExportSchemaDefinition(array $schemaDefinition): array
@@ -206,7 +216,7 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param array $schemaDefinition
+     * @param  array $schemaDefinition
      * @return array
      */
     public function transformChildSchemaDefinition(array $schemaDefinition): array
@@ -217,7 +227,7 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param string $type
+     * @param  string $type
      * @return boolean
      */
     private function isAvroType(string $type): bool

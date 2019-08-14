@@ -15,13 +15,13 @@ interface SchemaTemplateInterface
     public function getSchemaLevel(): string;
 
     /**
-     * @param array $schemaDefinition
+     * @param  array $schemaDefinition
      * @return SchemaTemplateInterface
      */
     public function withSchemaDefinition(array $schemaDefinition): SchemaTemplateInterface;
 
     /**
-     * @param string $schemaLevel
+     * @param  string $schemaLevel
      * @return SchemaTemplateInterface
      */
     public function withSchemaLevel(string $schemaLevel): SchemaTemplateInterface;

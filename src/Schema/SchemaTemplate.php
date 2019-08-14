@@ -32,7 +32,7 @@ final class SchemaTemplate implements SchemaTemplateInterface
     }
 
     /**
-     * @param array $schemaDefinition
+     * @param  array $schemaDefinition
      * @return SchemaTemplateInterface
      */
     public function withSchemaDefinition(array $schemaDefinition): SchemaTemplateInterface
@@ -43,7 +43,7 @@ final class SchemaTemplate implements SchemaTemplateInterface
     }
 
     /**
-     * @param string $schemaLevel
+     * @param  string $schemaLevel
      * @return SchemaTemplateInterface
      */
     public function withSchemaLevel(string $schemaLevel): SchemaTemplateInterface
