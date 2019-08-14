@@ -95,8 +95,8 @@ class SchemaMergerTest extends TestCase
         ];
 
         $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate->expects(self::once(0))->method('getSchemaDefinition')->willReturn($schemaDefinition);
-        $schemaTemplate->expects(self::once(0))->method('withSchemaDefinition')->with($expectedSchemaDefinition);
+        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
+        $schemaTemplate->expects(self::once())->method('withSchemaDefinition')->with($expectedSchemaDefinition);
 
         $childSchemaTemplate =  $this->getMockForAbstractClass(SchemaTemplateInterface::class);
         $childSchemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn(['fields' => []]);
@@ -107,6 +107,27 @@ class SchemaMergerTest extends TestCase
 
 
         $merger = SchemaMerger::create()->setSchemaRegistry($schemaRegistry);
+        $merger->resolveSchemaTemplate($schemaTemplate);
+    }
+
+    public function testResolveSchemaTemplateArrayType()
+    {
+        $schemaDefinition = [
+            'fields' => [
+                [
+                    'type' => ['int', 'string']
+                ],
+                [
+                    'type' => 1
+                ]
+            ]
+        ];
+
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
+        $schemaTemplate->expects(self::once())->method('withSchemaDefinition')->with($schemaDefinition);
+
+        $merger = SchemaMerger::create();
         $merger->resolveSchemaTemplate($schemaTemplate);
     }
 }
