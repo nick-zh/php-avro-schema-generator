@@ -163,20 +163,19 @@ final class SchemaMerger implements SchemaMergerInterface
 
 
     /**
-     * @return void
+     * @return int
      * @throws SchemaMergerException
      */
-    public function merge(): void
+    public function merge(): int
     {
+        $mergedFiles = 0;
         $registry = $this->getSchemaRegistry();
 
         if (null === $registry) {
             throw new SchemaMergerException(SchemaMergerException::NO_SCHEMA_REGISTRY_SET_EXCEPTION_MESSAGE);
         }
 
-        /**
- * @var SchemaTemplateInterface $schemaTemplate
-*/
+        /** @var SchemaTemplateInterface $schemaTemplate */
         foreach ($registry->getRootSchemas() as $schemaTemplate) {
             try {
                 $schemaTemplate = $this->resolveSchemaTemplate($schemaTemplate);
@@ -184,7 +183,10 @@ final class SchemaMerger implements SchemaMergerInterface
                 throw $e;
             }
             $this->exportSchema($schemaTemplate);
+            ++$mergedFiles;
         }
+
+        return $mergedFiles;
     }
 
     /**

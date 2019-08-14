@@ -21,6 +21,13 @@ interface SchemaMergerInterface
      */
     public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaMergerInterface;
 
+
+    /**
+     * @param string $outputDirectory
+     * @return SchemaMergerInterface
+     */
+    public function setOutputDirectory(string $outputDirectory): SchemaMergerInterface;
+
     /**
      * @return SchemaRegistryInterface|null
      */
@@ -33,9 +40,9 @@ interface SchemaMergerInterface
     public function resolveSchemaTemplate(SchemaTemplateInterface $schemaTemplate): SchemaTemplateInterface;
 
     /**
-     * @return void
+     * @return int
      */
-    public function merge(): void;
+    public function merge(): int;
 
     /**
      * @param  SchemaTemplateInterface $schemaTemplate
