@@ -114,6 +114,12 @@ final class SchemaMerger implements SchemaMergerInterface
         $result = [];
 
         foreach ($type as $typeItem) {
+            if (true === is_array($typeItem)) {
+                $typeItem['type'] = $this->getTypeValue($typeItem['type']);
+                $result[] = $typeItem;
+                continue;
+            }
+
             $result[] = $this->getTypeValue($typeItem);
         }
 
