@@ -4,8 +4,28 @@ declare(strict_types=1);
 
 namespace NickZh\PhpAvroSchemaGenerator\Registry;
 
+use FilesystemIterator;
+use NickZh\PhpAvroSchemaGenerator\Exception\ClassRegistryException;
+use NickZh\PhpAvroSchemaGenerator\Parser\TokenParser;
+use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClass;
+use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClassProperty;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
+use ReflectionClass;
+
 final class ClassRegistry implements ClassRegistryInterface
 {
+
+    /**
+     * @var array
+     */
+    protected $classDirectories = [];
+
+    /**
+     * @var array
+     */
+    protected $classes = [];
 
     /**
      * @param string $classDirectory
@@ -13,7 +33,9 @@ final class ClassRegistry implements ClassRegistryInterface
      */
     public function addClassDirectory(string $classDirectory): ClassRegistryInterface
     {
-        // TODO: Implement addClassDirectory() method.
+        $this->classDirectories[$classDirectory] = 1;
+
+        return $this;
     }
 
     /**
@@ -21,22 +43,71 @@ final class ClassRegistry implements ClassRegistryInterface
      */
     public function getClassDirectories(): array
     {
-        // TODO: Implement getClassDirectories() method.
+        return $this->classDirectories;
     }
 
     /**
      * @return ClassRegistryInterface
+     * @throws ClassRegistryException
      */
     public function load(): ClassRegistryInterface
     {
-        // TODO: Implement load() method.
+        foreach ($this->getClassDirectories() as $directory => $loneliestNumber) {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
+                    $directory,
+                    FilesystemIterator::SKIP_DOTS
+                )
+            );
+
+            /** @var SplFileInfo $file */
+            foreach ($iterator as $file) {
+                if ('php' === $file->getExtension()) {
+                    $this->registerClassFile($file);
+                }
+            }
+        }
+
+        return $this;
     }
 
     /**
-     * @return array
+     * @return array|PhpClass[]
      */
     public function getClasses(): array
     {
-        // TODO: Implement getClasses() method.
+        return $this->classes;
+    }
+
+    /**
+     * @param SplFileInfo $fileInfo
+     * @throws ClassRegistryException
+     * @return void
+     */
+    private function registerClassFile(SplFileInfo $fileInfo): void
+    {
+        if (false === $fileName = $fileInfo->getRealPath()) {
+            throw new ClassRegistryException(ClassRegistryException::FILE_PATH_EXCEPTION_MESSAGE);
+        }
+
+        if (false === $fileContent = file_get_contents($fileName)) {
+            throw new ClassRegistryException(
+                sprintf(
+                    ClassRegistryException::FILE_NOT_READABLE_EXCEPTION_MESSAGE,
+                    $fileName
+                )
+            );
+        }
+
+        $parser = new TokenParser($fileContent);
+
+        $properties = $parser->getProperties($parser->getNamespace() . '\\' . $parser->getClassName());
+
+        $this->classes[] = new PhpClass(
+            $parser->getClassName(),
+            $parser->getNamespace(),
+            $fileContent,
+            $properties
+        );
     }
 }

@@ -4,10 +4,18 @@ declare(strict_types=1);
 
 namespace NickZh\PhpAvroSchemaGenerator\Parser;
 
+use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClassProperty;
+use ReflectionClass;
+use ReflectionProperty;
+use Reflector;
+use ReflectionMethod;
+use ReflectionParameter;
+
 /**
  * Parses a file for namespaces/use/class declarations.
  *
- * Class taken and adapted from doctrine/annotations to avoid pulling the whole package.
+ * Class taken and adapted from doctrine/annotations and PHP-DI/PhpDocReader
+ * to avoid pulling the whole package.
  *
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Christian Kaps <christian.kaps@mohiva.com>
@@ -29,11 +37,36 @@ class TokenParser
     private $numTokens;
 
     /**
+     * @var string
+     */
+    private $className;
+
+    /**
+     * @var string
+     */
+    private $namespace = '';
+
+    /**
      * The current array pointer.
      *
      * @var int
      */
     private $pointer = 0;
+
+    private $ignoredTypes = array(
+        'bool',
+        'boolean',
+        'string',
+        'int',
+        'integer',
+        'float',
+        'double',
+        'array',
+        'object',
+        'callable',
+        'resource',
+        'mixed',
+    );
 
     /**
      * @param string $contents
@@ -52,6 +85,46 @@ class TokenParser
         token_get_all("<?php\n/**\n *\n */");
 
         $this->numTokens = count($this->tokens);
+    }
+
+    /**
+     * @return string
+     */
+    public function getClassName(): string
+    {
+        if (true === isset($this->className)) {
+            return $this->className;
+        }
+
+        for ($i = 0; $i < count($this->tokens); $i++) {
+            if ($this->tokens[$i][0] === T_CLASS) {
+                $this->className = $this->tokens[$i + 2][1];
+                return $this->className;
+            }
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getNamespace(): string
+    {
+        if ('' !== $this->namespace) {
+            return $this->namespace;
+        }
+
+        for ($i = 0; $i < count($this->tokens); $i++) {
+            if ($this->tokens[$i][0] === T_NAMESPACE) {
+                $index = 2;
+                while (true) {
+                    if (true === is_string($this->tokens[$i + $index])) {
+                        return $this->namespace;
+                    }
+                    $this->namespace .= $this->tokens[$i + $index][1];
+                    ++$index;
+                }
+            }
+        }
     }
 
     /**
@@ -80,6 +153,168 @@ class TokenParser
         }
 
         return $statements;
+    }
+
+    public function getProperties(string $classPath): array
+    {
+        $properties = [];
+        $reflectionClass = new ReflectionClass($classPath);
+        foreach ($reflectionClass->getProperties() as $property) {
+            $simpleType = $this->getPropertyClass($property, false);
+            $nestedType = $this->getPropertyClass($property, true);
+            $properties[] = new PhpClassProperty($property->getName(), $simpleType, $nestedType);
+        }
+
+        return $properties;
+    }
+
+    /**
+     * Parse the docblock of the property to get the class of the var annotation.
+     *
+     * @param ReflectionProperty $property
+     * @param bool $ignorePrimitive
+     *
+     * @throws AnnotationException
+     * @return string|null Type of the property (content of var annotation)
+     */
+    public function getPropertyClass(ReflectionProperty $property, bool $ignorePrimitive = true)
+    {
+        // Get the content of the @var annotation
+        if (preg_match('/@var\s+([^\s]+)/', $property->getDocComment(), $matches)) {
+            list(, $type) = $matches;
+        } else {
+            return null;
+        }
+
+        $types = explode('|', $this->replaceTypeStrings($type));
+
+        foreach ($types as $type) {
+            // Ignore primitive types
+            if (in_array($type, $this->ignoredTypes)) {
+                if (false === $ignorePrimitive) {
+                    return $type;
+                }
+
+                if (true === $ignorePrimitive && 1 < count($types)) {
+                    continue;
+                }
+
+                return null;
+            }
+            // Ignore types containing special characters ([], <> ...)
+            if (!preg_match('/^[a-zA-Z0-9\\\\_]+$/', $type)) {
+                return null;
+            }
+            $class = $property->getDeclaringClass();
+            // If the class name is not fully qualified (i.e. doesn't start with a \)
+            if ($type[0] !== '\\') {
+                // Try to resolve the FQN using the class context
+                $resolvedType = $this->tryResolveFqn($type, $class, $property);
+                if (!$resolvedType) {
+                    throw new \RuntimeException(sprintf(
+                        'The @var annotation on %s::%s contains a non existent class "%s". '
+                        . 'Did you maybe forget to add a "use" statement for this annotation?',
+                        $class->name,
+                        $property->getName(),
+                        $type
+                    ));
+                }
+
+                $type = $resolvedType;
+            }
+
+            if (!$this->classExists($type)) {
+                throw new \RuntimeException(sprintf(
+                    'The @var annotation on %s::%s contains a non existent class "%s"',
+                    $class->name,
+                    $property->getName(),
+                    $type
+                ));
+            }
+
+            // Remove the leading \ (FQN shouldn't contain it)
+            $type = ltrim($type, '\\');
+        }
+
+        return $type;
+    }
+
+    /**
+     * Attempts to resolve the FQN of the provided $type based on the $class and $member context.
+     *
+     * @param string $type
+     * @param ReflectionClass $class
+     * @param Reflector $member
+     *
+     * @return string|null Fully qualified name of the type, or null if it could not be resolved
+     */
+    private function tryResolveFqn($type, ReflectionClass $class, Reflector $member)
+    {
+        $alias = ($pos = strpos($type, '\\')) === false ? $type : substr($type, 0, $pos);
+        $loweredAlias = strtolower($alias);
+        // Retrieve "use" statements
+        $uses = $this->parseUseStatements($class);
+        if (isset($uses[$loweredAlias])) {
+            // Imported classes
+            if ($pos !== false) {
+                return $uses[$loweredAlias] . substr($type, $pos);
+            } else {
+                return $uses[$loweredAlias];
+            }
+        } elseif ($this->classExists($class->getNamespaceName() . '\\' . $type)) {
+            return $class->getNamespaceName() . '\\' . $type;
+        } elseif (isset($uses['__NAMESPACE__']) && $this->classExists($uses['__NAMESPACE__'] . '\\' . $type)) {
+            // Class namespace
+            return $uses['__NAMESPACE__'] . '\\' . $type;
+        } elseif ($this->classExists($type)) {
+            // No namespace
+            return $type;
+        }
+        if (version_compare(phpversion(), '5.4.0', '<')) {
+            return null;
+        } else {
+            // If all fail, try resolving through related traits
+            return $this->tryResolveFqnInTraits($type, $class, $member);
+        }
+    }
+
+    /**
+     * Attempts to resolve the FQN of the provided $type based on the $class and $member context, specifically searching
+     * through the traits that are used by the provided $class.
+     *
+     * @param string $type
+     * @param ReflectionClass $class
+     * @param Reflector $member
+     *
+     * @return string|null Fully qualified name of the type, or null if it could not be resolved
+     */
+    private function tryResolveFqnInTraits($type, ReflectionClass $class, Reflector $member)
+    {
+        /** @var ReflectionClass[] $traits */
+        $traits = array();
+        // Get traits for the class and its parents
+        while ($class) {
+            $traits = array_merge($traits, $class->getTraits());
+            $class = $class->getParentClass();
+        }
+
+        foreach ($traits as $trait) {
+            // Eliminate traits that don't have the property/method/parameter
+            if ($member instanceof ReflectionProperty && !$trait->hasProperty($member->name)) {
+                continue;
+            } elseif ($member instanceof ReflectionMethod && !$trait->hasMethod($member->name)) {
+                continue;
+            } elseif ($member instanceof ReflectionParameter && !$trait->hasMethod($member->getDeclaringFunction()->name)) {
+                continue;
+            }
+            // Run the resolver again with the ReflectionClass instance for the trait
+            $resolvedType = $this->tryResolveFqn($type, $trait, $member);
+
+            if ($resolvedType) {
+                return $resolvedType;
+            }
+        }
+        return null;
     }
 
     /**
@@ -156,5 +391,23 @@ class TokenParser
         }
 
         return $name;
+    }
+
+    /**
+     * @param string $class
+     * @return bool
+     */
+    private function classExists($class)
+    {
+        return class_exists($class) || interface_exists($class);
+    }
+
+    /**
+     * @param string $type
+     * @return string
+     */
+    private function replaceTypeStrings(string $type): string
+    {
+        return str_replace('[]', '', $type);
     }
 }

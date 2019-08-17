@@ -3,14 +3,11 @@
 declare(strict_types=1);
 
 require_once '../vendor/autoload.php';
+include 'classes/SomeTestClass.php';
+include 'classes/SomeOtherTestClass.php';
 
-use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistry;
-use NickZh\PhpAvroSchemaGenerator\Merger\SchemaMerger;
 
-$registry = (new SchemaRegistry())
-    ->addSchemaTemplateDirectory('./schemaTemplates')
-    ->load();
+use NickZh\PhpAvroSchemaGenerator\Registry\ClassRegistry;
+use NickZh\PhpAvroSchemaGenerator\Generator\SchemaGenerator;
 
-$merger = new SchemaMerger($registry, './schema');
-
-$merger->merge();
+$registry = (new ClassRegistry())->addClassDirectory('./classes')->load();
