@@ -6,7 +6,6 @@ namespace NickZh\PhpAvroSchemaGenerator\Tests\Unit\Generator;
 
 use NickZh\PhpAvroSchemaGenerator\Exception\SchemaMergerException;
 use NickZh\PhpAvroSchemaGenerator\Merger\SchemaMerger;
-use NickZh\PhpAvroSchemaGenerator\Merger\SchemaMergerInterface;
 use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 use PHPUnit\Framework\TestCase;
@@ -16,210 +15,172 @@ use PHPUnit\Framework\TestCase;
  */
 class SchemaMergerTest extends TestCase
 {
-    public function testCreate()
-    {
-        $this->assertInstanceOf(SchemaMergerInterface::class, SchemaMerger::create());
-    }
 
-    public function testSetSchemaRegistry()
+    public function testGetSchemaRegistry()
     {
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
-
-        $merger = SchemaMerger::create();
-
-        self::assertInstanceOf(SchemaMergerInterface::class, $merger->setSchemaRegistry($schemaRegistry));
-        self::assertInstanceOf(SchemaRegistryInterface::class, $merger->getSchemaRegistry());
+        $merger = new SchemaMerger($schemaRegistry);
+        self::assertEquals($schemaRegistry, $merger->getSchemaRegistry());
     }
 
-    public function testSetOutputDirectory()
+    public function testGetOutputDirectoryDefault()
     {
-        $merger = SchemaMerger::create();
-
-        $this->assertInstanceOf(SchemaMergerInterface::class, $merger->setOutputDirectory('test-dir'));
-
-        $reflectionProperty = new \ReflectionProperty($merger, 'outputDirectory');
-        $reflectionProperty->setAccessible(true);
-
-        self::assertSame('test-dir', $reflectionProperty->getValue($merger));
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $merger = new SchemaMerger($schemaRegistry);
+        self::assertEquals('/tmp', $merger->getOutputDirectory());
     }
 
-    public function testResolveSchemaTemplateBasic()
+    public function testGetOutputDirectory()
     {
-        $merger = SchemaMerger::create();
-        $schemaDefinition = [
-            'fields' => [
-                [
-                    'type' => [
-                        'type' => 'array',
-                        'items' => 'int'
-                    ]
-                ],
-                [
-                    'type' => 'string'
-                ]
-            ]
-        ];
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $outputDirectory = '/root';
+        $merger = new SchemaMerger($schemaRegistry, $outputDirectory);
+        self::assertEquals($outputDirectory, $merger->getOutputDirectory());
+    }
+
+    public function testGetAllTypesForSchemaTemplate()
+    {
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
         $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
-        $schemaTemplate->expects(self::once())->method('withSchemaDefinition')->with($schemaDefinition);
+        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn('{}');
+        $merger = new SchemaMerger($schemaRegistry);
 
-        $merger->resolveSchemaTemplate($schemaTemplate);
+        self::assertEquals([], $merger->getAllTypesForSchemaTemplate($schemaTemplate));
     }
 
-    public function testResolveSchemaTemplateNested()
+    public function testGetAllTypesForSchemaTemplateThrowsException()
     {
-        $schemaDefinition = [
-            'fields' => [
-                [
-                    'type' => [
-                        'type' => 'array',
-                        'items' => 'someType'
-                    ]
-                ],
-                [
-                    'type' => 'string'
-                ]
-            ]
-        ];
-        $expectedSchemaDefinition = [
-            'fields' => [
-                [
-                    'type' => [
-                        'type' => 'array',
-                        'items' => []
-                    ]
-                ],
-                [
-                    'type' => 'string'
-                ]
-            ]
-        ];
-
-        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
-        $schemaTemplate->expects(self::once())->method('withSchemaDefinition')->with($expectedSchemaDefinition);
-
-        $childSchemaTemplate =  $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $childSchemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn(['fields' => []]);
-        $childSchemaTemplate->expects(self::once())->method('withSchemaDefinition')->with(['fields' => []]);
+        self::expectException(\AvroSchemaParseException::class);
 
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
-        $schemaRegistry->expects(self::once())->method('getSchemaById')->with('someType')->willReturn($childSchemaTemplate);
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn('{"type": 1}');
+        $merger = new SchemaMerger($schemaRegistry);
 
-
-        $merger = SchemaMerger::create()->setSchemaRegistry($schemaRegistry);
-        $merger->resolveSchemaTemplate($schemaTemplate);
+        self::assertEquals([], $merger->getAllTypesForSchemaTemplate($schemaTemplate));
     }
 
-    public function testResolveSchemaTemplateNestedWithNoRegistry()
+    public function testGetAllTypesForSchemaTemplateResolveEmbeddedException()
     {
         self::expectException(SchemaMergerException::class);
-        self::expectExceptionMessage(SchemaMergerException::NO_SCHEMA_REGISTRY_SET_EXCEPTION_MESSAGE);
+        self::expectExceptionMessage(sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, 'com.example.Page'));
 
-        $schemaDefinition = [
-            'fields' => [
-                [
-                    'type' => [
-                        'type' => 'array',
-                        'items' => 'someType'
-                    ]
-                ],
-                [
-                    'type' => 'string'
-                ]
+        $definitionWithType = '{
+            "type": "record",
+            "namespace": "com.example",
+            "name": "Book",
+            "fields": [
+                { "name": "items", "type": {"type": "array", "items": "com.example.Page" }, "default": [] }
             ]
-        ];
-
+        }';
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
         $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
-        $schemaTemplate->expects(self::never())->method('withSchemaDefinition');
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('getSchemaDefinition')
+            ->willReturn($definitionWithType);
+        $merger = new SchemaMerger($schemaRegistry);
 
-        $merger = SchemaMerger::create();
-        $merger->resolveSchemaTemplate($schemaTemplate);
+        self::assertEquals([], $merger->getAllTypesForSchemaTemplate($schemaTemplate));
     }
 
-    public function testResolveSchemaTemplateNestedWitNoRegistryEntry()
+    public function testGetAllTypesForSchemaTemplateResolveEmbedded()
+    {
+        $definitionWithType = '{
+            "type": "record",
+            "namespace": "com.example",
+            "name": "Book",
+            "fields": [
+                { "name": "items", "type": {"type": "array", "items": ["string","com.example.Page"] }, "default": [] }
+            ]
+        }';
+        $replacedDefinition = '{
+            "type": "record",
+            "namespace": "com.example",
+            "name": "Book",
+            "fields": [
+                { "name": "items", "type": {"type": "array", "items": ["string"] }, "default": [] }
+            ]
+        }';
+        $emptyTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $emptyTemplate
+            ->expects(self::exactly(2))
+            ->method('getSchemaDefinition')
+            ->willReturn('{}');
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('getSchemaDefinition')
+            ->willReturn($definitionWithType);
+        $schemaTemplate->expects(self::once())
+            ->method('withSchemaDefinition')
+            ->with($replacedDefinition)
+            ->willReturn($emptyTemplate);
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $schemaRegistry
+            ->expects(self::once())
+            ->method('getSchemaById')
+            ->with('com.example.Page')
+            ->willReturn($emptyTemplate);
+        $merger = new SchemaMerger($schemaRegistry);
+
+        self::assertEquals(['com.example.Page'], $merger->getAllTypesForSchemaTemplate($schemaTemplate));
+    }
+
+    public function testMergeException()
     {
         self::expectException(SchemaMergerException::class);
-        self::expectExceptionMessage(sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, 'someType'));
-        $schemaDefinition = [
-            'fields' => [
-                [
-                    'type' => [
-                        'type' => 'array',
-                        'items' => 'someType'
-                    ]
-                ],
-                [
-                    'type' => 'string'
-                ]
-            ]
-        ];
+        self::expectExceptionMessage(sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, 'com.example.Page'));
 
+        $definitionWithType = '{
+            "type": "record",
+            "namespace": "com.example",
+            "name": "Book",
+            "fields": [
+                { "name": "items", "type": {"type": "array", "items": ["string","com.example.Page"] }, "default": [] }
+            ]
+        }';
         $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
-        $schemaTemplate->expects(self::never())->method('withSchemaDefinition');
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('getSchemaDefinition')
+            ->willReturn($definitionWithType);
 
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
-        $schemaRegistry->expects(self::once())->method('getSchemaById')->with('someType')->willReturn(null);
-
-
-        $merger = SchemaMerger::create()->setSchemaRegistry($schemaRegistry);
-        $merger->resolveSchemaTemplate($schemaTemplate);
-    }
-
-    public function testResolveSchemaTemplateArrayType()
-    {
-        $schemaDefinition = [
-            'fields' => [
-                [
-                    'type' => ['int', 'string']
-                ],
-                [
-                    'type' => 1
-                ]
-            ]
-        ];
-
-        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn($schemaDefinition);
-        $schemaTemplate->expects(self::once())->method('withSchemaDefinition')->with($schemaDefinition);
-
-        $merger = SchemaMerger::create();
-        $merger->resolveSchemaTemplate($schemaTemplate);
+        $schemaRegistry
+            ->expects(self::once())
+            ->method('getRootSchemas')
+            ->willReturn([$schemaTemplate]);
+        $merger = new SchemaMerger($schemaRegistry);
+        $merger->merge();
     }
 
     public function testMerge()
     {
-        $schemaDefinition = [
-            'name' => 'Test',
-            'fields' => [
-                [
-                    'type' => 'string'
-                ]
+        $definitionWithType = '{
+            "type": "record",
+            "namespace": "com.example",
+            "name": "Book",
+            "fields": [
+                { "name": "items", "type": {"type": "array", "items": ["string"] }, "default": [] }
             ]
-        ];
-
+        }';
         $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate->expects(self::exactly(2))->method('getSchemaDefinition')->willReturn($schemaDefinition);
-        $schemaTemplate->expects(self::once())->method('withSchemaDefinition')->with($schemaDefinition)->willReturn($schemaTemplate);
+        $schemaTemplate
+            ->expects(self::exactly(2))
+            ->method('getSchemaDefinition')
+            ->willReturn($definitionWithType);
 
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
-        $schemaRegistry->expects(self::once())->method('getRootSchemas')->willReturn([$schemaTemplate]);
-
-        $merger = SchemaMerger::create()->setSchemaRegistry($schemaRegistry)->setOutputDirectory('/tmp/foo');
+        $schemaRegistry
+            ->expects(self::once())
+            ->method('getRootSchemas')
+            ->willReturn([$schemaTemplate]);
+        $merger = new SchemaMerger($schemaRegistry, '/tmp/foobar');
         $merger->merge();
-        unlink('/tmp/foo/Test.avsc');
-        rmdir('/tmp/foo');
-    }
 
-    public function testMergeFailsWithNoRegistry()
-    {
-
-        self::expectException(SchemaMergerException::class);
-        self::expectExceptionMessage(SchemaMergerException::NO_SCHEMA_REGISTRY_SET_EXCEPTION_MESSAGE);
-
-        $merger = SchemaMerger::create();
-        $merger->merge();
+        self::assertFileExists('/tmp/foobar/Book.avsc');
+        unlink('/tmp/foobar/Book.avsc');
+        rmdir('/tmp/foobar');
     }
 }

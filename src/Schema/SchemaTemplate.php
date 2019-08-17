@@ -6,9 +6,9 @@ final class SchemaTemplate implements SchemaTemplateInterface
 {
 
     /**
-     * @var array
+     * @var string
      */
-    private $schemaDefinition = [];
+    private $schemaDefinition;
 
     /**
      * @var string
@@ -16,9 +16,22 @@ final class SchemaTemplate implements SchemaTemplateInterface
     private $schemaLevel = 'root';
 
     /**
-     * @return array
+     * @var string
      */
-    public function getSchemaDefinition(): array
+    private $schemaId;
+
+    /**
+     * @return string
+     */
+    public function getSchemaId(): string
+    {
+        return $this->schemaId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSchemaDefinition(): string
     {
         return $this->schemaDefinition;
     }
@@ -32,14 +45,29 @@ final class SchemaTemplate implements SchemaTemplateInterface
     }
 
     /**
-     * @param  array $schemaDefinition
+     * @param  string $schemaId
      * @return SchemaTemplateInterface
      */
-    public function withSchemaDefinition(array $schemaDefinition): SchemaTemplateInterface
+    public function withSchemaId(string $schemaId): SchemaTemplateInterface
     {
-        $this->schemaDefinition = $schemaDefinition;
+        $new = clone $this;
 
-        return $this;
+        $new->schemaId = $schemaId;
+
+        return $new;
+    }
+
+    /**
+     * @param  string $schemaDefinition
+     * @return SchemaTemplateInterface
+     */
+    public function withSchemaDefinition(string $schemaDefinition): SchemaTemplateInterface
+    {
+        $new = clone $this;
+
+        $new->schemaDefinition = $schemaDefinition;
+
+        return $new;
     }
 
     /**
@@ -48,8 +76,10 @@ final class SchemaTemplate implements SchemaTemplateInterface
      */
     public function withSchemaLevel(string $schemaLevel): SchemaTemplateInterface
     {
-        $this->schemaLevel = $schemaLevel;
+        $new = clone $this;
 
-        return $this;
+        $new->schemaLevel = $schemaLevel;
+
+        return $new;
     }
 }

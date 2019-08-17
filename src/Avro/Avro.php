@@ -6,7 +6,7 @@ class Avro
 {
     const FILE_EXTENSION = 'avsc';
     const LONELIEST_NUMBER = 1;
-    const TYPES = [
+    const BASIC_TYPES = [
         'null' => self::LONELIEST_NUMBER,
         'boolean' => self::LONELIEST_NUMBER,
         'int' => self::LONELIEST_NUMBER,

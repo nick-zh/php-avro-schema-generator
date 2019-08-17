@@ -81,9 +81,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
                 )
             );
 
-            /**
- * @var SplFileInfo $file
-*/
+            /** @var SplFileInfo $file */
             foreach ($iterator as $file) {
                 if (Avro::FILE_EXTENSION === $file->getExtension()) {
                     $this->registerSchemaFile($file);
@@ -136,8 +134,10 @@ final class SchemaRegistry implements SchemaRegistryInterface
         }
 
         $schemaData = json_decode($fileContent, true);
-        $this->schemas[$this->getSchemaId($schemaData)] = (new SchemaTemplate())
-            ->withSchemaDefinition($schemaData)
+        $schemaId = $this->getSchemaId($schemaData);
+        $this->schemas[$schemaId] = (new SchemaTemplate())
+            ->withSchemaId($schemaId)
+            ->withSchemaDefinition($fileContent)
             ->withSchemaLevel($this->getSchemaLevel($schemaData));
     }
 
