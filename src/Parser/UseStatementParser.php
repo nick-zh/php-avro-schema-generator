@@ -50,7 +50,7 @@ class UseStatementParser
      */
     private function getFileContent($filename, $lineNumber)
     {
-        if ( ! is_file($filename)) {
+        if (! is_file($filename)) {
             return null;
         }
 

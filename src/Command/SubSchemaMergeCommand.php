@@ -29,16 +29,14 @@ class SubSchemaMergeCommand extends Command
     {
         $output->writeln('Merging schema files');
 
-        $templateDirectory = $this->fixRelativePath($input->getArgument('templateDirectory'));
-        $outputDirectory = $this->fixRelativePath($input->getArgument('outputDirectory'));
+        $templateDirectory = $this->getPath($input->getArgument('templateDirectory'));
+        $outputDirectory = $this->getPath($input->getArgument('outputDirectory'));
 
         $registry = (new SchemaRegistry())
             ->addSchemaTemplateDirectory($templateDirectory)
             ->load();
 
-        $merger = SchemaMerger::create()
-            ->setSchemaRegistry($registry)
-            ->setOutputDirectory($outputDirectory);
+        $merger = new SchemaMerger($registry, $outputDirectory);
 
         $result = $merger->merge();
 
@@ -51,12 +49,9 @@ class SubSchemaMergeCommand extends Command
      * @param string $path
      * @return string
      */
-    private function fixRelativePath(string $path): string
+    private function getPath(string $path): string
     {
-        $result = $path;
-        if (0 === strpos($path, './')) {
-            $result = realpath($path);
-        }
+        $result = realpath($path);
 
         if (false === $result || false === is_dir($result)) {
             throw new \RuntimeException(sprintf('Directory not found %s', $path));

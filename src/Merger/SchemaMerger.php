@@ -155,7 +155,6 @@ final class SchemaMerger implements SchemaMergerInterface
             );
 
             $addedSchemas[$schemaId] = true;
-
         }
 
         $rootSchemaDefinition = $this->transformExportSchemaDefinition(
