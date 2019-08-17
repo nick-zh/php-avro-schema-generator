@@ -20,4 +20,9 @@ class Avro
         'map' => self::LONELIEST_NUMBER,
         'fixed' => self::LONELIEST_NUMBER,
     ];
+
+    const PHP_TYPE_MAP = [
+        'integer' => 'int',
+        'bool' => 'boolean'
+    ];
 }

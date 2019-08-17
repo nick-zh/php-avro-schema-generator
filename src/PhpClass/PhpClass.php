@@ -41,7 +41,7 @@ class PhpClass implements PhpClassInterface
      */
     public function getClassName(): string
     {
-        return $this->classNamespace;
+        return $this->className;
     }
 
     /**

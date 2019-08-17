@@ -8,11 +8,9 @@ use FilesystemIterator;
 use NickZh\PhpAvroSchemaGenerator\Exception\ClassRegistryException;
 use NickZh\PhpAvroSchemaGenerator\Parser\TokenParser;
 use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClass;
-use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClassProperty;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
-use ReflectionClass;
 
 final class ClassRegistry implements ClassRegistryInterface
 {
@@ -102,7 +100,6 @@ final class ClassRegistry implements ClassRegistryInterface
         $parser = new TokenParser($fileContent);
 
         $properties = $parser->getProperties($parser->getNamespace() . '\\' . $parser->getClassName());
-
         $this->classes[] = new PhpClass(
             $parser->getClassName(),
             $parser->getNamespace(),

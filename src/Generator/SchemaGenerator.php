@@ -11,6 +11,14 @@ use NickZh\PhpAvroSchemaGenerator\Registry\ClassRegistryInterface;
 
 final class SchemaGenerator implements SchemaGeneratorInterface
 {
+
+    private $typesToSkip = [
+        'object' => 1,
+        'callable' => 1,
+        'resource' => 1,
+        'mixed' => 1
+    ];
+
     /**
      * @var string
      */
@@ -60,16 +68,22 @@ final class SchemaGenerator implements SchemaGeneratorInterface
 
             /** @var PhpClassPropertyInterface $property */
             foreach ($class->getClassProperties() as $property) {
+                if (true === isset($this->typesToSkip[$property->getPropertyType()])) {
+                    continue;
+                }
+
                 $field = ['name' => $property->getPropertyName()];
 
                 if ('array' === $property->getPropertyType()) {
                     $field['type'] = [
-                        'type' => $property->getPropertyType(),
-                        'items' => $property->getPropertyArrayType()
+                        'type' => $this->getAvroType($property->getPropertyType()),
+                        'items' => $this->convertNamespace($property->getPropertyArrayType())
                     ];
                 } else {
-                    $field['type'] = $property->getPropertyType();
+                    $field['type'] = $this->getAvroType($this->convertNamespace($property->getPropertyType()));
                 }
+
+                $schema['fields'][] = $field;
             }
 
             $schemas[$schema['namespace'] . '.' . $schema['name']] = json_encode($schema);
@@ -111,5 +125,10 @@ final class SchemaGenerator implements SchemaGeneratorInterface
     private function convertNamespace(string $namespace): string
     {
         return str_replace('\\', '.', $namespace);
+    }
+
+    private function getAvroType(string $type)
+    {
+        return Avro::PHP_TYPE_MAP[$type] ?? $type;
     }
 }
