@@ -70,6 +70,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
 
     /**
      * @return SchemaRegistryInterface
+     * @throws SchemaRegistryException
      */
     public function load(): SchemaRegistryInterface
     {
