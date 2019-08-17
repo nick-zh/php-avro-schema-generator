@@ -183,4 +183,40 @@ class SchemaMergerTest extends TestCase
         unlink('/tmp/foobar/Book.avsc');
         rmdir('/tmp/foobar');
     }
+
+    public function testExportSchemaException()
+    {
+        self::expectException(SchemaMergerException::class);
+        self::expectExceptionMessage(sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, 'test'));
+
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $schemaRegistry
+            ->expects(self::once())
+            ->method('getSchemaById')
+            ->willReturn(null);
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+
+        $merger = new SchemaMerger($schemaRegistry, '/tmp/foobar');
+        $merger->exportSchema($schemaTemplate, ['test']);
+    }
+
+    public function testExportSchema()
+    {
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate
+            ->expects(self::exactly(2))
+            ->method('getSchemaDefinition')
+            ->willReturn('{"name": "test"}');
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $schemaRegistry
+            ->expects(self::once())
+            ->method('getSchemaById')
+            ->willReturn($schemaTemplate);
+
+        $merger = new SchemaMerger($schemaRegistry);
+        $merger->exportSchema($schemaTemplate, ['test', 'test']);
+
+        self::assertFileExists('/tmp/test.avsc');
+        unlink('/tmp/test.avsc');
+    }
 }
