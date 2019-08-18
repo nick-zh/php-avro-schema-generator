@@ -11,9 +11,9 @@ COPY dev/php/files/bin/ /usr/local/bin/
 RUN apk --no-cache upgrade && \
     apk --no-cache add bash git sudo make
 
-RUN if [ -z "$HOST_USER_ID" ]; then \
+RUN if [ ! -z "$HOST_USER_ID" ]; then \
         adduser -u $HOST_USER_ID -D -H $HOST_USER && \
-        echo "ALL ALL=NOPASSWD: ALL" >> /etc/sudoers \
+        echo "ALL ALL=NOPASSWD: ALL" >> /etc/sudoers; \
     fi
 
 # COMPOSER: install binary
