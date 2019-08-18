@@ -46,18 +46,18 @@ final class SchemaRegistry implements SchemaRegistryInterface
      */
     public function getRootSchemas(): array
     {
-        $rootSchema = [];
+        $rootSchemas = [];
 
         /**
  * @var SchemaTemplate $schema
 */
         foreach ($this->getSchemas() as $schema) {
             if (self::SCHEMA_LEVEL_ROOT == $schema->getSchemaLevel()) {
-                $rootSchema[] = $schema;
+                $rootSchemas[] = $schema;
             }
         }
 
-        return $rootSchema;
+        return $rootSchemas;
     }
 
     /**
@@ -125,7 +125,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
             throw new SchemaRegistryException(SchemaRegistryException::FILE_PATH_EXCEPTION_MESSAGE);
         }
 
-        if (false === $fileContent = file_get_contents($fileName)) {
+        if (false === $fileContent = @file_get_contents($fileName)) {
             throw new SchemaRegistryException(
                 sprintf(
                     SchemaRegistryException::FILE_NOT_READABLE_EXCEPTION_MESSAGE,

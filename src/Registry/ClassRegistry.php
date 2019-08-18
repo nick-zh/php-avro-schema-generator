@@ -88,7 +88,7 @@ final class ClassRegistry implements ClassRegistryInterface
             throw new ClassRegistryException(ClassRegistryException::FILE_PATH_EXCEPTION_MESSAGE);
         }
 
-        if (false === $fileContent = file_get_contents($fileName)) {
+        if (false === $fileContent = @file_get_contents($fileName)) {
             throw new ClassRegistryException(
                 sprintf(
                     ClassRegistryException::FILE_NOT_READABLE_EXCEPTION_MESSAGE,

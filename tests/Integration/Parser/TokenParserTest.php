@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NickZh\PhpAvroSchemaGenerator\Tests\Unit\Parser;
+namespace NickZh\PhpAvroSchemaGenerator\Tests\Integration\Parser;
 
 use NickZh\PhpAvroSchemaGenerator\Parser\TokenParser;
 use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClassPropertyInterface;
