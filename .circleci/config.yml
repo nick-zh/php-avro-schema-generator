@@ -37,20 +37,12 @@ jobs:
     machine: true
     steps:
       - checkout
-      - cache-load-vendor
-      - run:
-          name: Check for existing vendor
-          command: |
-            if [[ -d ./vendor ]]; then
-              circleci step halt
-            fi
       - cache-load-docker-layers
       - load-docker-layers
       - run-docker
       - execute-in-container:
           info: Install dependencies
           command: make install-dependencies
-      - cache-persist-vendor
 
   coverage:
     machine: true
@@ -97,7 +89,6 @@ commands:
       - checkout
       - cache-load-docker-layers
       - load-docker-layers
-      - cache-load-vendor
       - run-docker
   run-docker:
     steps:
@@ -137,21 +128,6 @@ commands:
           name: Load docker layers from cache
           keys:
             - docker-layers-{{ checksum "./docker/dev/php/Dockerfile" }}{{ checksum "./docker/docker-compose.yml" }}
-
-  cache-persist-vendor:
-    steps:
-      - save_cache:
-          name: Cache vendor
-          key: vendor-{{ checksum "./composer.lock" }}
-          paths:
-            - ./vendor/
-
-  cache-load-vendor:
-    steps:
-      - restore_cache:
-          name: Load vendor from cache
-          keys:
-            - vendor-{{ checksum "./composer.lock" }}
 
   execute-in-container:
     parameters:
