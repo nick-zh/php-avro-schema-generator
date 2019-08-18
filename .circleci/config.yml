@@ -5,9 +5,15 @@ workflows:
   test-avro-schema-generator:
     jobs:
       - build-docker
-      - coverage
-      - code-style
-      - static-analysis
+      - coverage:
+          requires:
+            - build-docker
+      - code-style:
+          requires:
+            - build-docker
+      - static-analysis:
+          requires:
+            - build-docker
 jobs:
   build-docker:
     machine: true
@@ -28,6 +34,9 @@ jobs:
     machine: true
     steps:
       - restore
+      - execute-in-container:
+          info: Install dependencies
+          command: make install-dependencies
       - run:
           name:  Download cc-test-reporter
           command: |
