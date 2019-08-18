@@ -5,18 +5,9 @@ workflows:
   test-avro-schema-generator:
     jobs:
       - build-docker
-      - install-dependencies:
-          requires:
-            - build-docker
-      - coverage:
-          requires:
-            - install-dependencies
-      - code-style:
-          requires:
-            - install-dependencies
-      - static-analysis:
-          requires:
-            - install-dependencies
+      - coverage
+      - code-style
+      - static-analysis
 jobs:
   build-docker:
     machine: true
@@ -32,17 +23,6 @@ jobs:
       - run-docker
       - persist-docker-layers
       - cache-persist-docker-layers
-
-  install-dependencies:
-    machine: true
-    steps:
-      - checkout
-      - cache-load-docker-layers
-      - load-docker-layers
-      - run-docker
-      - execute-in-container:
-          info: Install dependencies
-          command: make install-dependencies
 
   coverage:
     machine: true
@@ -67,6 +47,9 @@ jobs:
     steps:
       - restore
       - execute-in-container:
+          info: Install dependencies
+          command: make install-dependencies
+      - execute-in-container:
           info: Check code style
           command: make code-style
       - store_test_results:
@@ -76,6 +59,9 @@ jobs:
     machine: true
     steps:
       - restore
+      - execute-in-container:
+          info: Install dependencies
+          command: make install-dependencies
       - execute-in-container:
           info: Execute static analysis
           command: make static-analysis
