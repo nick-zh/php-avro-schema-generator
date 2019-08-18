@@ -133,6 +133,7 @@ class TokenParser
      * @param string $namespaceName The namespace name of the reflected class.
      *
      * @return array A list with all found use statements.
+     * @codeCoverageIgnore
      */
     public function parseUseStatements($namespaceName)
     {
@@ -176,6 +177,7 @@ class TokenParser
      *
      * @throws AnnotationException
      * @return string|null Type of the property (content of var annotation)
+     * @codeCoverageIgnore
      */
     public function getPropertyClass(ReflectionProperty $property, bool $ignorePrimitive = true)
     {
@@ -247,6 +249,7 @@ class TokenParser
      * @param Reflector $member
      *
      * @return string|null Fully qualified name of the type, or null if it could not be resolved
+     * @codeCoverageIgnore
      */
     private function tryResolveFqn($type, ReflectionClass $class, Reflector $member)
     {
@@ -287,6 +290,7 @@ class TokenParser
      * @param Reflector $member
      *
      * @return string|null Fully qualified name of the type, or null if it could not be resolved
+     * @codeCoverageIgnore
      */
     private function tryResolveFqnInTraits($type, ReflectionClass $class, Reflector $member)
     {
@@ -345,6 +349,7 @@ class TokenParser
      * Parses a single use statement.
      *
      * @return array A list with all found class names for a use statement.
+     * @codeCoverageIgnore
      */
     private function parseUseStatement()
     {

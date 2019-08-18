@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NickZh\PhpAvroSchemaGenerator\Tests\Unit\Generator;
+namespace NickZh\PhpAvroSchemaGenerator\Tests\Unit\Merger;
 
 use NickZh\PhpAvroSchemaGenerator\Exception\SchemaMergerException;
 use NickZh\PhpAvroSchemaGenerator\Merger\SchemaMerger;
