@@ -175,7 +175,7 @@ class TokenParser
      * @param ReflectionProperty $property
      * @param bool $ignorePrimitive
      *
-     * @throws AnnotationException
+     * @throws \RuntimeException
      * @return string|null Type of the property (content of var annotation)
      * @codeCoverageIgnore
      */
