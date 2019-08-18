@@ -21,6 +21,7 @@
   "autoload": {
     "psr-4": {
       "NickZh\\PhpAvroSchemaGenerator\\": "src/",
+      "NickZh\\PhpAvroSchemaGenerator\\Example\\": "example/classes/",
       "NickZh\\PhpAvroSchemaGenerator\\Tests\\": "tests/"
     }
   }

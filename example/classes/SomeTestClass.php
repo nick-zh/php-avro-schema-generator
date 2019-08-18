@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Test\Space;
+namespace NickZh\PhpAvroSchemaGenerator\Example;
 
-use Test\Space\SomeOtherTestClass;
+use NickZh\PhpAvroSchemaGenerator\Example\SomeOtherTestClass;
 
 class SomeTestClass
 {
