@@ -11,8 +11,10 @@ COPY dev/php/files/bin/ /usr/local/bin/
 RUN apk --no-cache upgrade && \
     apk --no-cache add bash git sudo make
 
-RUN adduser -u $HOST_USER_ID -D -H $HOST_USER && \
-    echo "ALL ALL=NOPASSWD: ALL" >> /etc/sudoers
+RUN if [ -z "$HOST_USER_ID" ]; then \
+        adduser -u $HOST_USER_ID -D -H $HOST_USER && \
+        echo "ALL ALL=NOPASSWD: ALL" >> /etc/sudoers \
+    fi
 
 # COMPOSER: install binary
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
