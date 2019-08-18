@@ -308,7 +308,9 @@ class TokenParser
                 continue;
             } elseif ($member instanceof ReflectionMethod && !$trait->hasMethod($member->name)) {
                 continue;
-            } elseif ($member instanceof ReflectionParameter && !$trait->hasMethod($member->getDeclaringFunction()->name)) {
+            } elseif ($member instanceof ReflectionParameter
+                && !$trait->hasMethod($member->getDeclaringFunction()->name)
+            ) {
                 continue;
             }
             // Run the resolver again with the ReflectionClass instance for the trait

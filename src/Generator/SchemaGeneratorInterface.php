@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NickZh\PhpAvroSchemaGenerator\Generator;
 
-
 use NickZh\PhpAvroSchemaGenerator\Registry\ClassRegistryInterface;
 
 interface SchemaGeneratorInterface
