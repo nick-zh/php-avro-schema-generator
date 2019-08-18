@@ -4,3 +4,5 @@ example/schema/
 composer.lock
 .phpunit.result.cache
 build/
+.php_cs.cache
+clover.xml

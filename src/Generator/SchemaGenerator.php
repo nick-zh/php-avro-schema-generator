@@ -5,212 +5,130 @@ declare(strict_types=1);
 namespace NickZh\PhpAvroSchemaGenerator\Generator;
 
 use NickZh\PhpAvroSchemaGenerator\Avro\Avro;
-use NickZh\PhpAvroSchemaGenerator\Exception\NoSchemaRegistrySet;
-use NickZh\PhpAvroSchemaGenerator\Exception\SchemaGenerationException;
-use NickZh\PhpAvroSchemaGenerator\Exception\UnknownSchemaTypeException;
-use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
-use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
+use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClassInterface;
+use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClassPropertyInterface;
+use NickZh\PhpAvroSchemaGenerator\Registry\ClassRegistryInterface;
 
 final class SchemaGenerator implements SchemaGeneratorInterface
 {
 
+    private $typesToSkip = [
+        'object' => 1,
+        'callable' => 1,
+        'resource' => 1,
+        'mixed' => 1
+    ];
+
     /**
      * @var string
      */
-    private $outputDirectory = '/tmp';
+    private $outputDirectory;
 
     /**
-     * @var SchemaRegistryInterface
+     * @var ClassRegistryInterface
      */
-    private $schemaRegistry;
+    private $classRegistry;
 
-    /**
-     * @return SchemaGenerator
-     */
-    public static function create(): SchemaGeneratorInterface
+    public function __construct(ClassRegistryInterface $classRegistry, string $outputDirectory = '/tmp')
     {
-        return new self();
-    }
-
-    /**
-     * @param SchemaRegistryInterface $schemaRegistry
-     * @return SchemaGeneratorInterface
-     */
-    public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaGeneratorInterface
-    {
-        $this->schemaRegistry = $schemaRegistry;
-
-        return $this;
-    }
-
-    /**
-     * @return SchemaRegistryInterface|null
-     */
-    public function getSchemaRegistry(): ?SchemaRegistryInterface
-    {
-        return $this->schemaRegistry;
-    }
-
-    /**
-     * @param string $outputDirectory
-     * @return $this
-     */
-    public function setOutputDirectory(string $outputDirectory): SchemaGeneratorInterface
-    {
+        $this->classRegistry = $classRegistry;
         $this->outputDirectory = $outputDirectory;
+    }
 
-        return $this;
+    /**
+     * @return ClassRegistryInterface
+     */
+    public function getClassRegistry(): ClassRegistryInterface
+    {
+        return $this->classRegistry;
     }
 
     /**
      * @return string
      */
-    private function getOutputDirectory(): string
+    public function getOutputDirectory(): string
     {
         return $this->outputDirectory;
     }
 
     /**
-     * @param SchemaTemplateInterface $schemaTemplate
-     * @return SchemaTemplateInterface
-     * @throws UnknownSchemaTypeException
-     */
-    public function resolveSchemaTemplate(SchemaTemplateInterface $schemaTemplate): SchemaTemplateInterface
-    {
-        $schemaDefinition = $schemaTemplate->getSchemaDefinition();
-
-        foreach ($schemaDefinition['fields'] as $idx => $field) {
-            $type = $field['type'];
-
-            if (true === is_array($type) && true === isset($type['items'])) {
-                $schemaDefinition['fields'][$idx]['type']['items'] = $this->getResolvedType($type['items']);
-            } else {
-                $schemaDefinition['fields'][$idx]['type'] = $this->getResolvedType($type);
-            }
-        }
-
-        return $schemaTemplate->withSchemaDefinition($schemaDefinition);
-    }
-
-    /**
-     * @param mixed $type
-     * @return array|string
-     * @throws UnknownSchemaTypeException
-     */
-    private function getResolvedType($type)
-    {
-        if (true === is_string($type)) {
-            return $this->getTypeValue($type);
-        }
-
-        if (false === is_array($type)) {
-            return $type;
-        }
-
-        $result = [];
-
-        foreach ($type as $typeItem) {
-            $result[] = $this->getTypeValue($typeItem);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param string $type
-     * @return mixed
-     * @throws UnknownSchemaTypeException
-     */
-    private function getTypeValue(string $type)
-    {
-        $typeDefinition = $this->getTypeDefinition($type);
-
-        if ($typeDefinition instanceof SchemaTemplateInterface) {
-            return $typeDefinition->getSchemaDefinition();
-        }
-
-        return $type;
-    }
-
-    /**
-     * @param string $type
-     * @return SchemaTemplateInterface|null
-     * @throws UnknownSchemaTypeException
-     */
-    private function getTypeDefinition(string $type): ?SchemaTemplateInterface
-    {
-        if (true === $this->isAvroType($type)) {
-            return null;
-        }
-
-        $schemaTemplate = $this->getSchemaRegistry()->getSchemaById($type);
-
-        if (null === $schemaTemplate) {
-            throw new UnknownSchemaTypeException(sprintf('Unknown schema type:%s', $type));
-        }
-
-        return $this->resolveSchemaTemplate($schemaTemplate);
-    }
-
-
-    /**
-     * @throws NoSchemaRegistrySet
-     * @throws UnknownSchemaTypeException
-     * @return void
-     */
-    public function generateSchemas(): void
-    {
-        $registry = $this->getSchemaRegistry();
-
-        if (null === $registry) {
-            throw new NoSchemaRegistrySet('No schema registry set');
-        }
-
-        /** @var SchemaTemplateInterface $schemaTemplate */
-        foreach ($registry->getRootSchemas() as $schemaTemplate) {
-            try {
-                $schemaTemplate = $this->resolveSchemaTemplate($schemaTemplate);
-            } catch (UnknownSchemaTypeException $e) {
-                throw $e;
-            }
-            $this->exportSchema($schemaTemplate);
-        }
-    }
-
-    /**
-     * @param SchemaTemplateInterface $schemaTemplate
-     * @return void
-     */
-    public function exportSchema(SchemaTemplateInterface $schemaTemplate): void
-    {
-        $schemaDefinition = $this->transformExportSchemaDefinition($schemaTemplate->getSchemaDefinition());
-
-        $schemaFilename = $schemaDefinition['name'] . '.' . Avro::FILE_EXTENSION;
-
-        if (false === file_exists($this->getOutputDirectory())) {
-            mkdir($this->getOutputDirectory());
-        }
-
-        file_put_contents($this->getOutputDirectory() . '/' .$schemaFilename, json_encode($schemaDefinition));
-    }
-
-    /**
-     * @param array $schemaDefinition
      * @return array
      */
-    public function transformExportSchemaDefinition(array $schemaDefinition): array
+    public function generate(): array
     {
-        unset($schemaDefinition['schema_level']);
+        $schemas = [];
 
-        return $schemaDefinition;
+        /** @var PhpClassInterface $class */
+        foreach ($this->getClassRegistry()->getClasses() as $class) {
+            $schema = [];
+            $schema['type'] = 'record';
+            $schema['name'] = $class->getClassName();
+            $schema['namespace'] = $this->convertNamespace($class->getClassNamespace());
+            $schema['fields'] = [];
+
+            /** @var PhpClassPropertyInterface $property */
+            foreach ($class->getClassProperties() as $property) {
+                if (true === isset($this->typesToSkip[$property->getPropertyType()])) {
+                    continue;
+                }
+
+                $field = ['name' => $property->getPropertyName()];
+
+                if ('array' === $property->getPropertyType()) {
+                    $field['type'] = [
+                        'type' => $this->getAvroType($property->getPropertyType()),
+                        'items' => $this->convertNamespace($property->getPropertyArrayType())
+                    ];
+                } else {
+                    $field['type'] = $this->getAvroType($this->convertNamespace($property->getPropertyType()));
+                }
+
+                $schema['fields'][] = $field;
+            }
+
+            $schemas[$schema['namespace'] . '.' . $schema['name']] = json_encode($schema);
+        }
+
+        return $schemas;
     }
 
     /**
-     * @param string $type
-     * @return boolean
+     * @param array $schemas
+     * @return int
      */
-    private function isAvroType(string $type): bool
+    public function exportSchemas(array $schemas): int
     {
-        return true === isset(Avro::TYPES[$type]);
+        $fileCount = 0;
+
+        foreach ($schemas as $schemaName => $schema) {
+            $filename = $this->getSchemaFilename($schemaName);
+            file_put_contents($filename, $schema);
+            ++$fileCount;
+        }
+
+        return $fileCount;
+    }
+
+    /**
+     * @param string $schemaName
+     * @return string
+     */
+    private function getSchemaFilename(string $schemaName): string
+    {
+        return $this->getOutputDirectory() . '/' . $schemaName . '.' . Avro::FILE_EXTENSION;
+    }
+
+    /**
+     * @param string $namespace
+     * @return string
+     */
+    private function convertNamespace(string $namespace): string
+    {
+        return str_replace('\\', '.', $namespace);
+    }
+
+    private function getAvroType(string $type)
+    {
+        return Avro::PHP_TYPE_MAP[$type] ?? $type;
     }
 }

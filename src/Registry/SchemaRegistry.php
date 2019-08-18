@@ -6,6 +6,7 @@ namespace NickZh\PhpAvroSchemaGenerator\Registry;
 
 use \FilesystemIterator;
 use NickZh\PhpAvroSchemaGenerator\Avro\Avro;
+use NickZh\PhpAvroSchemaGenerator\Exception\SchemaRegistryException;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplate;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 use \RecursiveDirectoryIterator;
@@ -30,7 +31,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
 
 
     /**
-     * @param string $schemaTemplateDirectory
+     * @param  string $schemaTemplateDirectory
      * @return SchemaRegistryInterface
      */
     public function addSchemaTemplateDirectory(string $schemaTemplateDirectory): SchemaRegistryInterface
@@ -45,16 +46,18 @@ final class SchemaRegistry implements SchemaRegistryInterface
      */
     public function getRootSchemas(): array
     {
-        $rootSchema = [];
+        $rootSchemas = [];
 
-        /** @var SchemaTemplate $schema */
+        /**
+ * @var SchemaTemplate $schema
+*/
         foreach ($this->getSchemas() as $schema) {
             if (self::SCHEMA_LEVEL_ROOT == $schema->getSchemaLevel()) {
-                $rootSchema[] = $schema;
+                $rootSchemas[] = $schema;
             }
         }
 
-        return $rootSchema;
+        return $rootSchemas;
     }
 
     /**
@@ -67,14 +70,17 @@ final class SchemaRegistry implements SchemaRegistryInterface
 
     /**
      * @return SchemaRegistryInterface
+     * @throws SchemaRegistryException
      */
     public function load(): SchemaRegistryInterface
     {
         foreach ($this->getSchemaDirectories() as $directory => $loneliestNumber) {
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(
-                $directory,
-                FilesystemIterator::SKIP_DOTS
-            ));
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
+                    $directory,
+                    FilesystemIterator::SKIP_DOTS
+                )
+            );
 
             /** @var SplFileInfo $file */
             foreach ($iterator as $file) {
@@ -96,7 +102,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @param string $schemaId
+     * @param  string $schemaId
      * @return SchemaTemplateInterface|null
      */
     public function getSchemaById(string $schemaId): ?SchemaTemplateInterface
@@ -109,19 +115,35 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @param \SplFileInfo $fileInfo
+     * @param  SplFileInfo $fileInfo
+     * @throws SchemaRegistryException
      * @return void
      */
     private function registerSchemaFile(SplFileInfo $fileInfo): void
     {
-        $schemaData = json_decode(file_get_contents($fileInfo->getRealPath()), true);
-        $this->schemas[$this->getSchemaId($schemaData)] = (new SchemaTemplate())
-            ->withSchemaDefinition($schemaData)
+        if (false === $fileName = $fileInfo->getRealPath()) {
+            throw new SchemaRegistryException(SchemaRegistryException::FILE_PATH_EXCEPTION_MESSAGE);
+        }
+
+        if (false === $fileContent = @file_get_contents($fileName)) {
+            throw new SchemaRegistryException(
+                sprintf(
+                    SchemaRegistryException::FILE_NOT_READABLE_EXCEPTION_MESSAGE,
+                    $fileName
+                )
+            );
+        }
+
+        $schemaData = json_decode($fileContent, true);
+        $schemaId = $this->getSchemaId($schemaData);
+        $this->schemas[$schemaId] = (new SchemaTemplate())
+            ->withSchemaId($schemaId)
+            ->withSchemaDefinition($fileContent)
             ->withSchemaLevel($this->getSchemaLevel($schemaData));
     }
 
     /**
-     * @param array $schemaData
+     * @param  array $schemaData
      * @return string
      */
     public function getSchemaId(array $schemaData): string
@@ -130,7 +152,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @param array $schemaData
+     * @param  array $schemaData
      * @return string
      */
     private function getSchemaLevel(array $schemaData): string

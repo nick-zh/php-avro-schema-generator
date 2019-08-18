@@ -10,7 +10,7 @@ interface SchemaRegistryInterface
 {
 
     /**
-     * @param string $schemaTemplateDirectory
+     * @param  string $schemaTemplateDirectory
      * @return SchemaRegistryInterface
      */
     public function addSchemaTemplateDirectory(string $schemaTemplateDirectory): SchemaRegistryInterface;
@@ -26,7 +26,7 @@ interface SchemaRegistryInterface
     public function getSchemaDirectories(): array;
 
     /**
-     * @return void
+     * @return SchemaRegistryInterface
      */
     public function load(): SchemaRegistryInterface;
 
@@ -36,14 +36,14 @@ interface SchemaRegistryInterface
     public function getSchemas(): array;
 
     /**
-     * @param string $schemaId
+     * @param  string $schemaId
      * @return SchemaTemplateInterface|null
      */
     public function getSchemaById(string $schemaId): ?SchemaTemplateInterface;
 
 
     /**
-     * @param array $schemaData
+     * @param  array $schemaData
      * @return string
      */
     public function getSchemaId(array $schemaData): string;

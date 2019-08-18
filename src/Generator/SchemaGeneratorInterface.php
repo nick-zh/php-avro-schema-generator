@@ -4,49 +4,28 @@ declare(strict_types=1);
 
 namespace NickZh\PhpAvroSchemaGenerator\Generator;
 
-use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
-use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
+use NickZh\PhpAvroSchemaGenerator\Registry\ClassRegistryInterface;
 
 interface SchemaGeneratorInterface
 {
-
     /**
-     * @return SchemaGeneratorInterface
+     * @return ClassRegistryInterface
      */
-    public static function create(): SchemaGeneratorInterface;
+    public function getClassRegistry(): ClassRegistryInterface;
 
     /**
-     * @param SchemaRegistryInterface $schemaRegistry
-     * @return SchemaGeneratorInterface
+     * @return string
      */
-    public function setSchemaRegistry(SchemaRegistryInterface $schemaRegistry): SchemaGeneratorInterface;
+    public function getOutputDirectory(): string;
 
     /**
-     * @return SchemaRegistryInterface|null
-     */
-    public function getSchemaRegistry(): ?SchemaRegistryInterface;
-
-    /**
-     * @param SchemaTemplateInterface $schemaTemplate
-     * @return SchemaTemplateInterface
-     */
-    public function resolveSchemaTemplate(SchemaTemplateInterface $schemaTemplate): SchemaTemplateInterface;
-
-    /**
-     * @return void
-     */
-    public function generateSchemas(): void;
-
-    /**
-     * @param SchemaTemplateInterface $schemaTemplate
-     * @return void
-     */
-    public function exportSchema(SchemaTemplateInterface $schemaTemplate): void;
-
-    /**
-     * @param array $schemaDefinition
      * @return array
      */
-    public function transformExportSchemaDefinition(array $schemaDefinition): array;
+    public function generate(): array;
 
+    /**
+     * @param array $schemas
+     * @return int
+     */
+    public function exportSchemas(array $schemas): int;
 }

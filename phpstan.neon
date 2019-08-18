@@ -1,0 +1,7 @@
+parameters:
+    level: 7
+    paths: [ src ]
+    ignoreErrors:
+        - "#Strict comparison using === between array and ',' will always evaluate to false.#"
+        - "#Strict comparison using === between array and ';' will always evaluate to false.#"
+        - '#Parameter \#1 $path of method NickZh\\PhpAvroSchemaGenerator\\Command\\SubSchemaMergeCommand::getPath() expects string, array<string>|string|null given.#'

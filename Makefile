@@ -1,29 +1,24 @@
-.PHONY: clean code-style coverage help test test-unit test-integration static-analysis update-dependencies
-.DEFAULT_GOAL := test
+.PHONY: clean code-style coverage help static-analysis update-dependencies install-dependencies
+.DEFAULT_GOAL := coverage
 
 PHPUNIT =  ./vendor/bin/phpunit -c ./phpunit.xml
 PHPDBG =  phpdbg -qrr ./vendor/bin/phpunit -c ./phpunit.xml
 PHPSTAN  = ./vendor/bin/phpstan
 PHPCS = ./vendor/bin/phpcs --extensions=php
+PHPCBF = ./vendor/bin/phpcbf
 CONSOLE = ./bin/console
 
 clean:
 	rm -rf ./build ./vendor
 
 code-style:
-	${PHPCS} --report-full --report-gitblame --standard=./vendor/jobcloud/unity-coding-standards/ruleset.xml ./app
+	${PHPCS} --report-full --report-gitblame --standard=PSR2 ./src
 
 coverage:
 	${PHPDBG}
 
-test:
-	${PHPUNIT}
-
-test-unit:
-	${PHPUNIT} --testsuite=Unit
-
-test-integration:
-	${PHPUNIT} --testsuite=Integration
+fix-code-style:
+	${PHPCBF} src/ --standard=PSR12
 
 static-analysis:
 	${PHPSTAN} analyse src --no-progress --level=7
@@ -31,17 +26,19 @@ static-analysis:
 update-dependencies:
 	composer update
 
+install-dependencies:
+	composer install
+
 help:
 	# Usage:
 	#   make <target> [OPTION=value]
 	#
 	# Targets:
-	#   clean               Cleans the coverage and the vendor directory
-	#   code-style          Check codestyle using phpcs
-	#   coverage            Generate code coverage (html, clover)
-	#   help                You're looking at it!
-	#   test (default)      Run all the tests with phpunit
-	#   test-unit           Run all unit tests with phpunit
-	#   test-integration    Run all integration tests with phpunit
-	#   static-analysis     Run static analysis using phpstan
-	#   update-dependencies Run composer update
+	#   clean                Cleans the coverage and the vendor directory
+	#   code-style           Check codestyle using phpcs
+	#   coverage (default)   Generate code coverage (html, clover)
+	#   fix-code-style       Fix code style
+	#   help                 You're looking at it!
+	#   static-analysis      Run static analysis using phpstan
+	#   update-dependencies  Run composer update
+	#   install-dependencies Run composer install

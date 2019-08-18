@@ -5,9 +5,9 @@ namespace NickZh\PhpAvroSchemaGenerator\Schema;
 interface SchemaTemplateInterface
 {
     /**
-     * @return array
+     * @return string
      */
-    public function getSchemaDefinition(): array;
+    public function getSchemaDefinition(): string;
 
     /**
      * @return string
@@ -15,13 +15,24 @@ interface SchemaTemplateInterface
     public function getSchemaLevel(): string;
 
     /**
-     * @param array $schemaDefinition
-     * @return SchemaTemplateInterface
+     * @return string
      */
-    public function withSchemaDefinition(array $schemaDefinition): SchemaTemplateInterface;
+    public function getSchemaId(): string;
 
     /**
-     * @param string $schemaLevel
+     * @param  string $schemaId
+     * @return SchemaTemplateInterface
+     */
+    public function withSchemaId(string $schemaId): SchemaTemplateInterface;
+
+    /**
+     * @param  string $schemaDefinition
+     * @return SchemaTemplateInterface
+     */
+    public function withSchemaDefinition(string $schemaDefinition): SchemaTemplateInterface;
+
+    /**
+     * @param  string $schemaLevel
      * @return SchemaTemplateInterface
      */
     public function withSchemaLevel(string $schemaLevel): SchemaTemplateInterface;
