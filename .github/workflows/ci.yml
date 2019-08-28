@@ -32,9 +32,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Composer update
-          uses: nick-zh/composer@v0.1.0
-          with:
-            action: update
+        uses: nick-zh/composer@v0.1.0
+        with:
+          action: update
       - name: Start docker containers
         env:
           USER_ID: 1001
@@ -46,9 +46,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Composer update
-          uses: nick-zh/composer@v0.1.0
-          with:
-            action: update
+        uses: nick-zh/composer@v0.1.0
+        with:
+          action: update
       - name: Start docker containers
         env:
           USER_ID: 1001
