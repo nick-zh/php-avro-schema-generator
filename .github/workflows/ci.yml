@@ -17,20 +17,20 @@ jobs:
     steps:
       - name:  Download cc-test-reporter
         run: |
-          mkdir -p tmp/
+          mkdir -p ${GITHUB_WORKSPACE}/tmp/
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./tmp/cc-test-reporter
           chmod +x ./tmp/cc-test-reporter
       - name: Start docker containers
         env:
           USER_ID: 1001
-        run: cd docker && docker-compose up -d
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
       - name: Run coverage
         run: docker-compose exec php make coverage
       - name: Upload coverage results to Code Climate
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         run: |
-          ./tmp/cc-test-reporter after-build -p /var/www/html --coverage-input-type clover;
+          ${GITHUB_WORKSPACE}/tmp/cc-test-reporter after-build -p /var/www/html --coverage-input-type clover;
   static-analysis:
     needs: build-docker
     runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
       - name: Start docker containers
         env:
           USER_ID: 1001
-        run: cd docker && docker-compose up -d
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
       - name: Run static analysis
         run: docker-compose exec php make static-analysis
   code-style:
@@ -48,6 +48,6 @@ jobs:
       - name: Start docker containers
         env:
           USER_ID: 1001
-        run: cd docker && docker-compose up -d
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
       - name: Check code style
         run: docker-compose exec php make code-style
