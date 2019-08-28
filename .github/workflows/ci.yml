@@ -15,6 +15,7 @@ jobs:
     needs: build-docker
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
       - name:  Download cc-test-reporter
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/tmp/
@@ -35,6 +36,7 @@ jobs:
     needs: build-docker
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
       - name: Start docker containers
         env:
           USER_ID: 1001
@@ -45,6 +47,7 @@ jobs:
     needs: build-docker
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
       - name: Start docker containers
         env:
           USER_ID: 1001
