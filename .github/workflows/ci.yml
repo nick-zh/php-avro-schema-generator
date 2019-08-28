@@ -6,9 +6,10 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     steps:
-      - run: id
       - uses: actions/checkout@v1
       - name: Start docker containers
+        env:
+          USER_ID: 1001
         run: cd docker && docker-compose up -d
   coverage:
     needs: build-docker
@@ -20,6 +21,8 @@ jobs:
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./tmp/cc-test-reporter
           chmod +x ./tmp/cc-test-reporter
       - name: Start docker containers
+        env:
+          USER_ID: 1001
         run: cd docker && docker-compose up -d
       - name: Run coverage
         run: docker-compose exec php make coverage
@@ -33,6 +36,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Start docker containers
+        env:
+          USER_ID: 1001
         run: cd docker && docker-compose up -d
       - name: Run static analysis
         run: docker-compose exec php make static-analysis
@@ -41,6 +46,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Start docker containers
+        env:
+          USER_ID: 1001
         run: cd docker && docker-compose up -d
       - name: Check code style
         run: docker-compose exec php make code-style
