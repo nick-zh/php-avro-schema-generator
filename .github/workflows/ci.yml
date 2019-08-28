@@ -26,7 +26,7 @@ jobs:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
       - name: Run coverage
-        run: docker-compose exec php make coverage
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec php make coverage
       - name: Upload coverage results to Code Climate
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
@@ -42,7 +42,7 @@ jobs:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
       - name: Run static analysis
-        run: docker-compose exec php make static-analysis
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec php make static-analysis
   code-style:
     needs: build-docker
     runs-on: ubuntu-latest
@@ -53,4 +53,4 @@ jobs:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
       - name: Check code style
-        run: docker-compose exec php make code-style
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec php make code-style
