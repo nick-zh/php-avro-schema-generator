@@ -1,0 +1,45 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Start docker containers
+        run: cd docker && docker-compose up -d
+  coverage:
+    needs: build-docker
+    runs-on: ubuntu-latest
+    env:
+      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+    steps:
+      - name: Start docker containers
+        run: cd docker && docker-compose up -d
+      - name: Run coverage
+        run: docker-compose exec php make coverage
+  static-analysis:
+    needs: build-docker
+    runs-on: ubuntu-latest
+    steps:
+      - name:  Download cc-test-reporter
+        run: |
+          mkdir -p tmp/
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./tmp/cc-test-reporter
+          chmod +x ./tmp/cc-test-reporter
+      - name: Start docker containers
+        run: cd docker && docker-compose up -d
+      - name: Run static analysis
+        run: docker-compose exec php make static-analysis
+      - name: Upload coverage results to Code Climate
+        run: |
+            ./tmp/cc-test-reporter after-build -p /var/www/html --coverage-input-type clover;
+  code-style:
+    needs: build-docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start docker containers
+        run: cd docker && docker-compose up -d
+      - name: Check code style
+        run: docker-compose exec php make code-style
