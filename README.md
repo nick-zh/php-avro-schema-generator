@@ -1,5 +1,5 @@
 # Avro schema generator for PHP
-[![CircleCI](https://circleci.com/gh/nick-zh/php-avro-schema-generator.svg?style=svg)](https://circleci.com/gh/nick-zh/php-avro-schema-generator)
+[![Actions Status](https://github.com/nick-zh/php-avro-schema-generator/workflows/CI/badge.svg)](https://github.com/nick-zh/php-avro-schema-generator/workflows/CI/badge.svg)
 [![Maintainability](https://api.codeclimate.com/v1/badges/937e14c63beb08885c70/maintainability)](https://codeclimate.com/github/nick-zh/php-avro-schema-generator/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/937e14c63beb08885c70/test_coverage)](https://codeclimate.com/github/nick-zh/php-avro-schema-generator/test_coverage)
 [![Latest Stable Version](https://poser.pugx.org/nick-zh/php-avro-schema-generator/v/stable)](https://packagist.org/packages/nick-zh/php-avro-schema-generator)
