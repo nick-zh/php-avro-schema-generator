@@ -6,6 +6,7 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     steps:
+      - run: id
       - uses: actions/checkout@v1
       - name: Start docker containers
         run: cd docker && docker-compose up -d
