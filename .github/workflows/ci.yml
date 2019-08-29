@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Composer update
-        uses: nick-zh/composer@v0.1.1
+        uses: nick-zh/composer@v0.2.0
         with:
           action: update
       - name:  Download cc-test-reporter
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Composer update
-        uses: nick-zh/composer@v0.1.1
+        uses: nick-zh/composer@v0.2.0
         with:
           action: update
       - name: Start docker containers
@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Composer update
-        uses: nick-zh/composer@v0.1.1
+        uses: nick-zh/composer@v0.2.0
         with:
           action: update
       - name: Start docker containers
