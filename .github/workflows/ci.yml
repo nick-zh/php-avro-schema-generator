@@ -7,10 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Composer update
-        uses: nick-zh/composer@v0.1.1
-        with:
-          action: update
       - name:  Download cc-test-reporter
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/tmp/
@@ -20,6 +16,8 @@ jobs:
         env:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
+      - name: Run coverage
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Run coverage
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make coverage
       - name: Upload coverage results to Code Climate
@@ -31,27 +29,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Composer update
-        uses: nick-zh/composer@v0.1.1
-        with:
-          action: update
       - name: Start docker containers
         env:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
+      - name: Run coverage
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Run static analysis
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make static-analysis
   code-style:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Composer update
-        uses: nick-zh/composer@v0.1.1
-        with:
-          action: update
       - name: Start docker containers
         env:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
+      - name: Run coverage
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Check code style
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make code-style
