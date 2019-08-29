@@ -7,10 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Composer update
-        uses: nick-zh/composer@v0.1.1
-        with:
-          action: update
+      - name: Run coverage
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name:  Download cc-test-reporter
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/tmp/
@@ -31,10 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Composer update
-        uses: nick-zh/composer@v0.1.1
-        with:
-          action: update
+      - name: Run coverage
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Start docker containers
         env:
           USER_ID: 1001
@@ -45,10 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Composer update
-        uses: nick-zh/composer@v0.1.1
-        with:
-          action: update
+      - name: Run coverage
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Start docker containers
         env:
           USER_ID: 1001
