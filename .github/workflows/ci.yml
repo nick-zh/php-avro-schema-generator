@@ -41,11 +41,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Run coverage
-        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Start docker containers
         env:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
+      - name: Run coverage
+        run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Check code style
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make code-style
