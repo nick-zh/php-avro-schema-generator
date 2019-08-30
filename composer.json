@@ -18,6 +18,9 @@
     "squizlabs/php_codesniffer": "^3.4.2",
     "friendsofphp/php-cs-fixer": "^2.15"
   },
+  "bin": [
+    "bin/avro-cli"
+  ],
   "autoload": {
     "psr-4": {
       "NickZh\\PhpAvroSchemaGenerator\\": "src/",
