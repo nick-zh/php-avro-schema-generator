@@ -37,7 +37,7 @@ $merger->merge();
 
 #### Merge subschemas (command)
 ```bash
-./bin/console avro:subschema:merge ./example/schemaTemplates ./example/schema
+./vendor/bin/avro-cli avro:subschema:merge ./example/schemaTemplates ./example/schema
 ```
 
 ### Generating schemas from classes
@@ -67,5 +67,5 @@ $generator->exportSchemas($schemas);
 
 #### Merge subschemas (command)
 ```bash
-./bin/console avro:schema:generate ./example/classes ./example/schemaTemplates
+./vendor/bin/avro-cli avro:schema:generate ./example/classes ./example/schemaTemplates
 ```
