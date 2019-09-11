@@ -54,18 +54,20 @@ class TokenParser
     private $pointer = 0;
 
     private $ignoredTypes = array(
-        'bool',
-        'boolean',
-        'string',
-        'int',
-        'integer',
-        'float',
-        'double',
-        'array',
-        'object',
-        'callable',
-        'resource',
-        'mixed',
+        'null' => 'null',
+        'bool' => 'boolean',
+        'boolean' => 'boolean',
+        'string' => 'string',
+        'int' => 'int',
+        'integer' => 'int',
+        'float' => 'float',
+        'double' => 'double',
+        'array' => 'array',
+        'object' => 'object',
+        'callable' => 'callable',
+        'resource' => 'resource',
+        'mixed' => 'mixed',
+        'Collection' => 'array',
     );
 
     /**
@@ -192,9 +194,9 @@ class TokenParser
 
         foreach ($types as $type) {
             // Ignore primitive types
-            if (in_array($type, $this->ignoredTypes)) {
+            if (true === isset($this->ignoredTypes[$type])) {
                 if (false === $ignorePrimitive) {
-                    return $type;
+                    return $this->ignoredTypes[$type];
                 }
 
                 if (true === $ignorePrimitive && 1 < count($types)) {
