@@ -163,8 +163,13 @@ class TokenParser
     public function getProperties(string $classPath): array
     {
         $properties = [];
+
         $reflectionClass = new ReflectionClass($classPath);
+
         foreach ($reflectionClass->getProperties() as $property) {
+            $simpleType = null;
+            $nestedType = null;
+
             try {
                 $simpleType = $this->getPropertyClass($property, false);
                 $nestedType = $this->getPropertyClass($property, true);
@@ -173,6 +178,8 @@ class TokenParser
                     $parser = new TokenParser(file_get_contents($reflectionClass->getParentClass()->getFileName()));
                     $simpleType = $parser->getPropertyClass($property, false);
                     $nestedType = $parser->getPropertyClass($property, true);
+                } else {
+                    throw $e;
                 }
             }
 
@@ -270,6 +277,7 @@ class TokenParser
         $loweredAlias = strtolower($alias);
         // Retrieve "use" statements
         $uses = $this->parseUseStatements($class);
+
         if (isset($uses[$loweredAlias])) {
             // Imported classes
             if ($pos !== false) {

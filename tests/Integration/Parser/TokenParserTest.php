@@ -21,6 +21,13 @@ class TokenParserTest extends TestCase
         self::assertEquals('SomeTestClass', $parser->getClassName());
     }
 
+    public function testGetClassNameForInterface()
+    {
+        $filePath = __DIR__ . '/../../../example/classes/SomeTestInterface.php';
+        $parser = new TokenParser(file_get_contents($filePath));
+        self::assertNull($parser->getClassName());
+    }
+
     public function testGetNamespace()
     {
         $filePath = __DIR__ . '/../../../example/classes/SomeTestClass.php';
