@@ -99,6 +99,10 @@ final class ClassRegistry implements ClassRegistryInterface
 
         $parser = new TokenParser($fileContent);
 
+        if (null === $parser->getClassName()) {
+            return;
+        }
+
         $properties = $parser->getProperties($parser->getNamespace() . '\\' . $parser->getClassName());
         $this->classes[] = new PhpClass(
             $parser->getClassName(),

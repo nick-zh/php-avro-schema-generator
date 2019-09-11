@@ -92,7 +92,7 @@ class TokenParser
     /**
      * @return string
      */
-    public function getClassName(): string
+    public function getClassName(): ?string
     {
         if (true === isset($this->className)) {
             return $this->className;
@@ -104,6 +104,8 @@ class TokenParser
                 return $this->className;
             }
         }
+
+        return null;
     }
 
     /**
