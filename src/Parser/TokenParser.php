@@ -157,6 +157,8 @@ class TokenParser
             $statements = array();
         }
 
+        $this->pointer = 0;
+
         return $statements;
     }
 
@@ -167,22 +169,8 @@ class TokenParser
         $reflectionClass = new ReflectionClass($classPath);
 
         foreach ($reflectionClass->getProperties() as $property) {
-            $simpleType = null;
-            $nestedType = null;
-
-            try {
-                $simpleType = $this->getPropertyClass($property, false);
-                $nestedType = $this->getPropertyClass($property, true);
-            } catch (\RuntimeException $e) {
-                if (false !== $reflectionClass->getParentClass()) {
-                    $parser = new TokenParser(file_get_contents($reflectionClass->getParentClass()->getFileName()));
-                    $simpleType = $parser->getPropertyClass($property, false);
-                    $nestedType = $parser->getPropertyClass($property, true);
-                } else {
-                    throw $e;
-                }
-            }
-
+            $simpleType = $this->getPropertyClass($property, false);
+            $nestedType = $this->getPropertyClass($property, true);
             $properties[] = new PhpClassProperty($property->getName(), $simpleType, $nestedType);
         }
 
@@ -193,7 +181,7 @@ class TokenParser
      * Parse the docblock of the property to get the class of the var annotation.
      *
      * @param ReflectionProperty $property
-     * @param bool $ignorePrimitive
+     * @param boolean            $ignorePrimitive
      *
      * @throws \RuntimeException
      * @return string|null Type of the property (content of var annotation)
@@ -232,6 +220,7 @@ class TokenParser
             if ($type[0] !== '\\') {
                 // Try to resolve the FQN using the class context
                 $resolvedType = $this->tryResolveFqn($type, $class, $property);
+
                 if (!$resolvedType) {
                     throw new \RuntimeException(sprintf(
                         'The @var annotation on %s::%s contains a non existent class "%s". '
@@ -276,7 +265,8 @@ class TokenParser
         $alias = ($pos = strpos($type, '\\')) === false ? $type : substr($type, 0, $pos);
         $loweredAlias = strtolower($alias);
         // Retrieve "use" statements
-        $uses = $this->parseUseStatements($class);
+        $parser = new TokenParser(file_get_contents($class->getFileName()));
+        $uses = $parser->parseUseStatements($class->getNamespaceName());
 
         if (isset($uses[$loweredAlias])) {
             // Imported classes

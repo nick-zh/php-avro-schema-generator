@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NickZh\PhpAvroSchemaGenerator\Example;
 
 use NickZh\PhpAvroSchemaGenerator\Example\Wonderland\Wonderland;
