@@ -165,8 +165,17 @@ class TokenParser
         $properties = [];
         $reflectionClass = new ReflectionClass($classPath);
         foreach ($reflectionClass->getProperties() as $property) {
-            $simpleType = $this->getPropertyClass($property, false);
-            $nestedType = $this->getPropertyClass($property, true);
+            try {
+                $simpleType = $this->getPropertyClass($property, false);
+                $nestedType = $this->getPropertyClass($property, true);
+            } catch (\RuntimeException $e) {
+                if (false !== $reflectionClass->getParentClass()) {
+                    $parser = new TokenParser(file_get_contents($reflectionClass->getParentClass()->getFileName()));
+                    $simpleType = $parser->getPropertyClass($property, false);
+                    $nestedType = $parser->getPropertyClass($property, true);
+                }
+            }
+
             $properties[] = new PhpClassProperty($property->getName(), $simpleType, $nestedType);
         }
 

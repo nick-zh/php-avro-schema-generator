@@ -74,11 +74,10 @@ final class SchemaGenerator implements SchemaGeneratorInterface
                 }
 
                 $field = ['name' => $property->getPropertyName()];
-
                 if ('array' === $property->getPropertyType()) {
                     $field['type'] = [
                         'type' => $property->getPropertyType(),
-                        'items' => $this->convertNamespace($property->getPropertyArrayType())
+                        'items' => $this->convertNamespace($property->getPropertyArrayType() ?? 'string')
                     ];
                 } else {
                     $field['type'] = $this->convertNamespace($property->getPropertyType());
