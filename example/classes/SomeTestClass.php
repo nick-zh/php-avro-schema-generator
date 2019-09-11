@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace NickZh\PhpAvroSchemaGenerator\Example;
 
 use NickZh\PhpAvroSchemaGenerator\Example\SomeOtherTestClass;
+use NickZh\PhpAvroSchemaGenerator\Example\SomeBaseClass;
 
-class SomeTestClass
+class SomeTestClass extends SomeBaseClass
 {
 
     /**

@@ -13,6 +13,7 @@ final class SchemaGenerator implements SchemaGeneratorInterface
 {
 
     private $typesToSkip = [
+        'null' => 1,
         'object' => 1,
         'callable' => 1,
         'resource' => 1,
@@ -73,14 +74,13 @@ final class SchemaGenerator implements SchemaGeneratorInterface
                 }
 
                 $field = ['name' => $property->getPropertyName()];
-
                 if ('array' === $property->getPropertyType()) {
                     $field['type'] = [
-                        'type' => $this->getAvroType($property->getPropertyType()),
-                        'items' => $this->convertNamespace($property->getPropertyArrayType())
+                        'type' => $property->getPropertyType(),
+                        'items' => $this->convertNamespace($property->getPropertyArrayType() ?? 'string')
                     ];
                 } else {
-                    $field['type'] = $this->getAvroType($this->convertNamespace($property->getPropertyType()));
+                    $field['type'] = $this->convertNamespace($property->getPropertyType());
                 }
 
                 $schema['fields'][] = $field;
@@ -125,10 +125,5 @@ final class SchemaGenerator implements SchemaGeneratorInterface
     private function convertNamespace(string $namespace): string
     {
         return str_replace('\\', '.', $namespace);
-    }
-
-    private function getAvroType(string $type)
-    {
-        return Avro::PHP_TYPE_MAP[$type] ?? $type;
     }
 }

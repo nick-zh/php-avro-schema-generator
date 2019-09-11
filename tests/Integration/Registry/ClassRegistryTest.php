@@ -36,7 +36,7 @@ class ClassRegistryTest extends TestCase
 
         $classes = $registry->getClasses();
 
-        self::assertCount(2, $classes);
+        self::assertCount(4, $classes);
 
         foreach ($classes as $class) {
             self::assertInstanceOf(PhpClassInterface::class, $class);

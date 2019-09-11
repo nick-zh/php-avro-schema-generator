@@ -21,6 +21,13 @@ class TokenParserTest extends TestCase
         self::assertEquals('SomeTestClass', $parser->getClassName());
     }
 
+    public function testGetClassNameForInterface()
+    {
+        $filePath = __DIR__ . '/../../../example/classes/SomeTestInterface.php';
+        $parser = new TokenParser(file_get_contents($filePath));
+        self::assertNull($parser->getClassName());
+    }
+
     public function testGetNamespace()
     {
         $filePath = __DIR__ . '/../../../example/classes/SomeTestClass.php';
@@ -34,7 +41,7 @@ class TokenParserTest extends TestCase
         $filePath = __DIR__ . '/../../../example/classes/SomeTestClass.php';
         $parser = new TokenParser(file_get_contents($filePath));
         $properties = $parser->getProperties($parser->getNamespace() . '\\' . $parser->getClassName());
-        self::assertCount(14, $properties);
+        self::assertCount(15, $properties);
 
         foreach($properties as $property) {
             self::assertInstanceOf(PhpClassPropertyInterface::class, $property);

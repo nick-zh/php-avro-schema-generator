@@ -54,18 +54,20 @@ class TokenParser
     private $pointer = 0;
 
     private $ignoredTypes = array(
-        'bool',
-        'boolean',
-        'string',
-        'int',
-        'integer',
-        'float',
-        'double',
-        'array',
-        'object',
-        'callable',
-        'resource',
-        'mixed',
+        'null' => 'null',
+        'bool' => 'boolean',
+        'boolean' => 'boolean',
+        'string' => 'string',
+        'int' => 'int',
+        'integer' => 'int',
+        'float' => 'float',
+        'double' => 'double',
+        'array' => 'array',
+        'object' => 'object',
+        'callable' => 'callable',
+        'resource' => 'resource',
+        'mixed' => 'mixed',
+        'Collection' => 'array',
     );
 
     /**
@@ -90,7 +92,7 @@ class TokenParser
     /**
      * @return string
      */
-    public function getClassName(): string
+    public function getClassName(): ?string
     {
         if (true === isset($this->className)) {
             return $this->className;
@@ -102,6 +104,8 @@ class TokenParser
                 return $this->className;
             }
         }
+
+        return null;
     }
 
     /**
@@ -153,13 +157,17 @@ class TokenParser
             $statements = array();
         }
 
+        $this->pointer = 0;
+
         return $statements;
     }
 
     public function getProperties(string $classPath): array
     {
         $properties = [];
+
         $reflectionClass = new ReflectionClass($classPath);
+
         foreach ($reflectionClass->getProperties() as $property) {
             $simpleType = $this->getPropertyClass($property, false);
             $nestedType = $this->getPropertyClass($property, true);
@@ -173,7 +181,7 @@ class TokenParser
      * Parse the docblock of the property to get the class of the var annotation.
      *
      * @param ReflectionProperty $property
-     * @param bool $ignorePrimitive
+     * @param boolean            $ignorePrimitive
      *
      * @throws \RuntimeException
      * @return string|null Type of the property (content of var annotation)
@@ -192,9 +200,9 @@ class TokenParser
 
         foreach ($types as $type) {
             // Ignore primitive types
-            if (in_array($type, $this->ignoredTypes)) {
+            if (true === isset($this->ignoredTypes[$type])) {
                 if (false === $ignorePrimitive) {
-                    return $type;
+                    return $this->ignoredTypes[$type];
                 }
 
                 if (true === $ignorePrimitive && 1 < count($types)) {
@@ -212,6 +220,7 @@ class TokenParser
             if ($type[0] !== '\\') {
                 // Try to resolve the FQN using the class context
                 $resolvedType = $this->tryResolveFqn($type, $class, $property);
+
                 if (!$resolvedType) {
                     throw new \RuntimeException(sprintf(
                         'The @var annotation on %s::%s contains a non existent class "%s". '
@@ -256,7 +265,9 @@ class TokenParser
         $alias = ($pos = strpos($type, '\\')) === false ? $type : substr($type, 0, $pos);
         $loweredAlias = strtolower($alias);
         // Retrieve "use" statements
-        $uses = $this->parseUseStatements($class);
+        $parser = new TokenParser(file_get_contents($class->getFileName()));
+        $uses = $parser->parseUseStatements($class->getNamespaceName());
+
         if (isset($uses[$loweredAlias])) {
             // Imported classes
             if ($pos !== false) {
