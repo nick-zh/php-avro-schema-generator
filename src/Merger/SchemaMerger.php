@@ -101,11 +101,12 @@ final class SchemaMerger implements SchemaMergerInterface
 
 
     /**
-     * @return int
+     * @param boolean $prefixWithNamespace
+     * @return integer
      * @throws AvroSchemaParseException
      * @throws SchemaMergerException
      */
-    public function merge(): int
+    public function merge(bool $prefixWithNamespace = false): int
     {
         $mergedFiles = 0;
         $registry = $this->getSchemaRegistry();
@@ -117,7 +118,7 @@ final class SchemaMerger implements SchemaMergerInterface
             } catch (SchemaMergerException $e) {
                 throw $e;
             }
-            $this->exportSchema($schemaTemplate, $schemaTypes);
+            $this->exportSchema($schemaTemplate, $schemaTypes, $prefixWithNamespace);
             ++$mergedFiles;
         }
 
@@ -126,12 +127,16 @@ final class SchemaMerger implements SchemaMergerInterface
 
     /**
      * @param SchemaTemplateInterface $rootSchemaTemplate
-     * @param array $schemaTypes
+     * @param array                   $schemaTypes
+     * @param boolean                 $prefixWithNamespace
      * @return void
      *@throws SchemaMergerException
      */
-    public function exportSchema(SchemaTemplateInterface $rootSchemaTemplate, array $schemaTypes): void
-    {
+    public function exportSchema(
+        SchemaTemplateInterface $rootSchemaTemplate,
+        array $schemaTypes,
+        bool $prefixWithNamespace = false
+    ): void {
         $schemas = [];
         $addedSchemas = [];
 
@@ -150,9 +155,9 @@ final class SchemaMerger implements SchemaMergerInterface
                 );
             }
 
-            $schemas[] = $this->transformExportSchemaDefinition(
+            $schemas[] = json_encode($this->transformExportSchemaDefinition(
                 json_decode($schemaTemplate->getSchemaDefinition(), true)
-            );
+            ));
 
             $addedSchemas[$schemaId] = true;
         }
@@ -161,15 +166,21 @@ final class SchemaMerger implements SchemaMergerInterface
             json_decode($rootSchemaTemplate->getSchemaDefinition(), true)
         );
 
-        $schemas[] = $rootSchemaDefinition;
+        $schemas[] = json_encode($rootSchemaDefinition);
 
-        $schemaFilename = $rootSchemaDefinition['name'] . '.' . Avro::FILE_EXTENSION;
+        $prefix = '';
+
+        if (true === $prefixWithNamespace) {
+            $prefix = $rootSchemaDefinition['namespace'] . '.';
+        }
+
+        $schemaFilename = $prefix . $rootSchemaDefinition['name'] . '.' . Avro::FILE_EXTENSION;
 
         if (false === file_exists($this->getOutputDirectory())) {
             mkdir($this->getOutputDirectory());
         }
 
-        file_put_contents($this->getOutputDirectory() . '/' . $schemaFilename, json_encode($schemas));
+        file_put_contents($this->getOutputDirectory() . '/' . $schemaFilename, implode(',', $schemas));
     }
 
     /**
