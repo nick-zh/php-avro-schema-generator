@@ -10,6 +10,7 @@ use NickZh\PhpAvroSchemaGenerator\Merger\SchemaMerger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SubSchemaMergeCommand extends Command
@@ -22,13 +23,12 @@ class SubSchemaMergeCommand extends Command
             ->setHelp('Merges all schema template files and creates schema files')
             ->addArgument('templateDirectory', InputArgument::REQUIRED, 'Schema template directory')
             ->addArgument('outputDirectory', InputArgument::REQUIRED, 'Output directory')
-        ;
+            ->addOption('prefixWithNamespace', null, InputOption::VALUE_NONE, 'Prefix output files with namespace');
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $output->writeln('Merging schema files');
-
         $templateDirectory = $this->getPath($input->getArgument('templateDirectory'));
         $outputDirectory = $this->getPath($input->getArgument('outputDirectory'));
 
@@ -38,7 +38,7 @@ class SubSchemaMergeCommand extends Command
 
         $merger = new SchemaMerger($registry, $outputDirectory);
 
-        $result = $merger->merge();
+        $result = $merger->merge($input->getOption('prefixWithNamespace'));
 
 
         // retrieve the argument value using getArgument()

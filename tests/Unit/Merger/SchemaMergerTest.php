@@ -177,10 +177,10 @@ class SchemaMergerTest extends TestCase
             ->method('getRootSchemas')
             ->willReturn([$schemaTemplate]);
         $merger = new SchemaMerger($schemaRegistry, '/tmp/foobar');
-        $merger->merge();
+        $merger->merge(true);
 
-        self::assertFileExists('/tmp/foobar/Book.avsc');
-        unlink('/tmp/foobar/Book.avsc');
+        self::assertFileExists('/tmp/foobar/com.example.Book.avsc');
+        unlink('/tmp/foobar/com.example.Book.avsc');
         rmdir('/tmp/foobar');
     }
 
