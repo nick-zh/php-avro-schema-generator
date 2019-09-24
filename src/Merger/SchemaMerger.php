@@ -155,9 +155,9 @@ final class SchemaMerger implements SchemaMergerInterface
                 );
             }
 
-            $schemas[] = json_encode($this->transformExportSchemaDefinition(
+            $schemas[] = $this->transformExportSchemaDefinition(
                 json_decode($schemaTemplate->getSchemaDefinition(), true)
-            ));
+            );
 
             $addedSchemas[$schemaId] = true;
         }
@@ -166,7 +166,7 @@ final class SchemaMerger implements SchemaMergerInterface
             json_decode($rootSchemaTemplate->getSchemaDefinition(), true)
         );
 
-        $schemas[] = json_encode($rootSchemaDefinition);
+        $schemas[] = $rootSchemaDefinition;
 
         $prefix = '';
 
@@ -180,7 +180,13 @@ final class SchemaMerger implements SchemaMergerInterface
             mkdir($this->getOutputDirectory());
         }
 
-        file_put_contents($this->getOutputDirectory() . '/' . $schemaFilename, implode(',', $schemas));
+        $fileContents = json_encode($rootSchemaDefinition);
+
+        if(1 < count($schemas)) {
+            $fileContents = json_encode($schemas);
+        }
+
+        file_put_contents($this->getOutputDirectory() . '/' . $schemaFilename, $fileContents);
     }
 
     /**
