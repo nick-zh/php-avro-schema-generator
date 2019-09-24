@@ -182,7 +182,7 @@ final class SchemaMerger implements SchemaMergerInterface
 
         $fileContents = json_encode($rootSchemaDefinition);
 
-        if(1 < count($schemas)) {
+        if (1 < count($schemas)) {
             $fileContents = json_encode($schemas);
         }
 
