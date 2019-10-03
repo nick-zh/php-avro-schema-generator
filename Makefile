@@ -12,7 +12,7 @@ clean:
 	rm -rf ./build ./vendor
 
 code-style:
-	${PHPCS} --report-full --report-gitblame --standard=PSR2 ./src
+	${PHPCS} --report-full --report-gitblame --standard=PSR12 ./src
 
 coverage:
 	${PHPDBG}
