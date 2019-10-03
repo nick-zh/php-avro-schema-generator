@@ -11,7 +11,6 @@ use NickZh\PhpAvroSchemaGenerator\Exception\SchemaGenerationException;
 use NickZh\PhpAvroSchemaGenerator\Exception\UnknownSchemaTypeException;
 use NickZh\PhpAvroSchemaGenerator\Registry\SchemaRegistryInterface;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
-use \AvroSchema;
 
 final class SchemaMerger implements SchemaMergerInterface
 {
@@ -62,7 +61,7 @@ final class SchemaMerger implements SchemaMergerInterface
             $exceptionThrown = false;
             $definition = $schemaTemplate->getSchemaDefinition();
             try {
-                AvroSchema::parse($definition);
+                \AvroSchema::parse($definition);
             } catch (AvroSchemaParseException $e) {
                 if (false === strpos($e->getMessage(), ' is not a schema we know about.')) {
                     throw $e;
