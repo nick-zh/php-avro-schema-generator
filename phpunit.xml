@@ -28,7 +28,6 @@
         <whitelist>
             <directory>src</directory>
             <exclude>
-                <directory>src/console.php</directory>
                 <directory>src/Command</directory>
             </exclude>
         </whitelist>

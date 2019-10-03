@@ -319,7 +319,8 @@ class TokenParser
                 continue;
             } elseif ($member instanceof ReflectionMethod && !$trait->hasMethod($member->name)) {
                 continue;
-            } elseif ($member instanceof ReflectionParameter
+            } elseif (
+                $member instanceof ReflectionParameter
                 && !$trait->hasMethod($member->getDeclaringFunction()->name)
             ) {
                 continue;
@@ -346,9 +347,12 @@ class TokenParser
     {
         for ($i = $this->pointer; $i < $this->numTokens; $i++) {
             $this->pointer++;
-            if ($this->tokens[$i][0] === T_WHITESPACE ||
-                $this->tokens[$i][0] === T_COMMENT ||
-                ($docCommentIsComment && $this->tokens[$i][0] === T_DOC_COMMENT)) {
+            if (
+                $this->tokens[$i][0] === T_WHITESPACE
+                || $this->tokens[$i][0] === T_COMMENT
+                || ($docCommentIsComment
+                    && $this->tokens[$i][0] === T_DOC_COMMENT)
+            ) {
                 continue;
             }
 

@@ -4,9 +4,9 @@ namespace NickZh\PhpAvroSchemaGenerator\Avro;
 
 class Avro
 {
-    const FILE_EXTENSION = 'avsc';
-    const LONELIEST_NUMBER = 1;
-    const BASIC_TYPES = [
+    public const FILE_EXTENSION = 'avsc';
+    public const LONELIEST_NUMBER = 1;
+    public const BASIC_TYPES = [
         'null' => self::LONELIEST_NUMBER,
         'boolean' => self::LONELIEST_NUMBER,
         'int' => self::LONELIEST_NUMBER,
@@ -19,10 +19,5 @@ class Avro
         'array' => self::LONELIEST_NUMBER,
         'map' => self::LONELIEST_NUMBER,
         'fixed' => self::LONELIEST_NUMBER,
-    ];
-
-    const PHP_TYPE_MAP = [
-        'integer' => 'int',
-        'bool' => 'boolean'
     ];
 }

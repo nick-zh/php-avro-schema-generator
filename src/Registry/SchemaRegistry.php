@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace NickZh\PhpAvroSchemaGenerator\Registry;
 
-use \FilesystemIterator;
 use NickZh\PhpAvroSchemaGenerator\Avro\Avro;
 use NickZh\PhpAvroSchemaGenerator\Exception\SchemaRegistryException;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplate;
 use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
-use \RecursiveDirectoryIterator;
-use \RecursiveIteratorIterator;
-use \SplFileInfo;
 
 final class SchemaRegistry implements SchemaRegistryInterface
 {
 
-    const SCHEMA_LEVEL_ROOT = 'root';
-    const SCHEMA_LEVEL_CHILD = 'child';
+    public const SCHEMA_LEVEL_ROOT = 'root';
+    public const SCHEMA_LEVEL_CHILD = 'child';
 
     /**
      * @var array
@@ -75,14 +71,14 @@ final class SchemaRegistry implements SchemaRegistryInterface
     public function load(): SchemaRegistryInterface
     {
         foreach ($this->getSchemaDirectories() as $directory => $loneliestNumber) {
-            $iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator(
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator(
                     $directory,
-                    FilesystemIterator::SKIP_DOTS
+                    \FilesystemIterator::SKIP_DOTS
                 )
             );
 
-            /** @var SplFileInfo $file */
+            /** @var \SplFileInfo $file */
             foreach ($iterator as $file) {
                 if (Avro::FILE_EXTENSION === $file->getExtension()) {
                     $this->registerSchemaFile($file);
@@ -115,11 +111,11 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @param  SplFileInfo $fileInfo
+     * @param  \SplFileInfo $fileInfo
      * @throws SchemaRegistryException
      * @return void
      */
-    private function registerSchemaFile(SplFileInfo $fileInfo): void
+    private function registerSchemaFile(\SplFileInfo $fileInfo): void
     {
         if (false === $fileName = $fileInfo->getRealPath()) {
             throw new SchemaRegistryException(SchemaRegistryException::FILE_PATH_EXCEPTION_MESSAGE);
