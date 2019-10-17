@@ -184,6 +184,39 @@ class SchemaMergerTest extends TestCase
         rmdir('/tmp/foobar');
     }
 
+    public function testMergeWithFilenameOption()
+    {
+        $definitionWithType = '{
+            "type": "record",
+            "namespace": "com.example",
+            "name": "Book",
+            "fields": [
+                { "name": "items", "type": {"type": "array", "items": ["string"] }, "default": [] }
+            ]
+        }';
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate
+            ->expects(self::exactly(2))
+            ->method('getSchemaDefinition')
+            ->willReturn($definitionWithType);
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('getFilename')
+            ->willReturn('bla.avsc');
+
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $schemaRegistry
+            ->expects(self::once())
+            ->method('getRootSchemas')
+            ->willReturn([$schemaTemplate]);
+        $merger = new SchemaMerger($schemaRegistry, '/tmp/foobar');
+        $merger->merge(true, true);
+
+        self::assertFileExists('/tmp/foobar/bla.avsc');
+        unlink('/tmp/foobar/bla.avsc');
+        rmdir('/tmp/foobar');
+    }
+
     public function testExportSchemaException()
     {
         self::expectException(SchemaMergerException::class);

@@ -20,6 +20,11 @@ interface SchemaTemplateInterface
     public function getSchemaId(): string;
 
     /**
+     * @return string
+     */
+    public function getFilename(): string;
+
+    /**
      * @param  string $schemaId
      * @return SchemaTemplateInterface
      */
@@ -36,4 +41,10 @@ interface SchemaTemplateInterface
      * @return SchemaTemplateInterface
      */
     public function withSchemaLevel(string $schemaLevel): SchemaTemplateInterface;
+
+    /**
+     * @param  string $filename
+     * @return SchemaTemplateInterface
+     */
+    public function withFilename(string $filename): SchemaTemplateInterface;
 }

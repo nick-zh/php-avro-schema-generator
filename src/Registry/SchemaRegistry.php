@@ -133,6 +133,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
         $schemaData = json_decode($fileContent, true);
         $schemaId = $this->getSchemaId($schemaData);
         $this->schemas[$schemaId] = (new SchemaTemplate())
+            ->withFilename($fileInfo->getBasename())
             ->withSchemaId($schemaId)
             ->withSchemaDefinition($fileContent)
             ->withSchemaLevel($this->getSchemaLevel($schemaData));
