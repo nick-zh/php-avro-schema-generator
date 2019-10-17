@@ -101,11 +101,12 @@ final class SchemaMerger implements SchemaMergerInterface
 
     /**
      * @param boolean $prefixWithNamespace
+     * @param boolean $useTemplateName
      * @return integer
      * @throws AvroSchemaParseException
      * @throws SchemaMergerException
      */
-    public function merge(bool $prefixWithNamespace = false): int
+    public function merge(bool $prefixWithNamespace = false, bool $useTemplateName = false): int
     {
         $mergedFiles = 0;
         $registry = $this->getSchemaRegistry();
@@ -117,7 +118,7 @@ final class SchemaMerger implements SchemaMergerInterface
             } catch (SchemaMergerException $e) {
                 throw $e;
             }
-            $this->exportSchema($schemaTemplate, $schemaTypes, $prefixWithNamespace);
+            $this->exportSchema($schemaTemplate, $schemaTypes, $prefixWithNamespace, $useTemplateName);
             ++$mergedFiles;
         }
 
@@ -128,13 +129,15 @@ final class SchemaMerger implements SchemaMergerInterface
      * @param SchemaTemplateInterface $rootSchemaTemplate
      * @param array                   $schemaTypes
      * @param boolean                 $prefixWithNamespace
+     * @param boolean                 $useTemplateName
      * @return void
      *@throws SchemaMergerException
      */
     public function exportSchema(
         SchemaTemplateInterface $rootSchemaTemplate,
         array $schemaTypes,
-        bool $prefixWithNamespace = false
+        bool $prefixWithNamespace = false,
+        bool $useTemplateName = false
     ): void {
         $schemas = [];
         $addedSchemas = [];
@@ -174,6 +177,10 @@ final class SchemaMerger implements SchemaMergerInterface
         }
 
         $schemaFilename = $prefix . $rootSchemaDefinition['name'] . '.' . Avro::FILE_EXTENSION;
+
+        if (true === $useTemplateName) {
+            $schemaFilename = $rootSchemaTemplate->getFilename();
+        }
 
         if (false === file_exists($this->getOutputDirectory())) {
             mkdir($this->getOutputDirectory());

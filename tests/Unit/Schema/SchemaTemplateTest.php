@@ -36,4 +36,12 @@ class SchemaTemplateTest extends TestCase
         self::assertInstanceOf(SchemaTemplateInterface::class, $template);
         self::assertEquals('test', $template->getSchemaDefinition());
     }
+
+    public function testFilename()
+    {
+        $template = (new SchemaTemplate())->withFilename('test');
+
+        self::assertInstanceOf(SchemaTemplateInterface::class, $template);
+        self::assertEquals('test', $template->getFilename());
+    }
 }

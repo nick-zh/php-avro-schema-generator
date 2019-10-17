@@ -23,7 +23,8 @@ class SubSchemaMergeCommand extends Command
             ->setHelp('Merges all schema template files and creates schema files')
             ->addArgument('templateDirectory', InputArgument::REQUIRED, 'Schema template directory')
             ->addArgument('outputDirectory', InputArgument::REQUIRED, 'Output directory')
-            ->addOption('prefixWithNamespace', null, InputOption::VALUE_NONE, 'Prefix output files with namespace');
+            ->addOption('prefixWithNamespace', null, InputOption::VALUE_NONE, 'Prefix output files with namespace')
+            ->addOption('useFilenameAsSchemaName', null, InputOption::VALUE_NONE, 'Use template filename as schema filename');
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
@@ -38,7 +39,10 @@ class SubSchemaMergeCommand extends Command
 
         $merger = new SchemaMerger($registry, $outputDirectory);
 
-        $result = $merger->merge($input->getOption('prefixWithNamespace'));
+        $result = $merger->merge(
+            $input->getOption('prefixWithNamespace'),
+            $input->getOption('useFilenameAsSchemaName')
+        );
 
 
         // retrieve the argument value using getArgument()

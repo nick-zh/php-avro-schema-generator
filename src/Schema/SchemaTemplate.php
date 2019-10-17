@@ -21,6 +21,11 @@ final class SchemaTemplate implements SchemaTemplateInterface
     private $schemaId;
 
     /**
+     * @var string
+     */
+    private $filename;
+
+    /**
      * @return string
      */
     public function getSchemaId(): string
@@ -42,6 +47,14 @@ final class SchemaTemplate implements SchemaTemplateInterface
     public function getSchemaLevel(): string
     {
         return $this->schemaLevel;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilename(): string
+    {
+        return $this->filename;
     }
 
     /**
@@ -79,6 +92,19 @@ final class SchemaTemplate implements SchemaTemplateInterface
         $new = clone $this;
 
         $new->schemaLevel = $schemaLevel;
+
+        return $new;
+    }
+
+    /**
+     * @param  string $filename
+     * @return SchemaTemplateInterface
+     */
+    public function withFilename(string $filename): SchemaTemplateInterface
+    {
+        $new = clone $this;
+
+        $new->filename = $filename;
 
         return $new;
     }
