@@ -24,7 +24,12 @@ class SubSchemaMergeCommand extends Command
             ->addArgument('templateDirectory', InputArgument::REQUIRED, 'Schema template directory')
             ->addArgument('outputDirectory', InputArgument::REQUIRED, 'Output directory')
             ->addOption('prefixWithNamespace', null, InputOption::VALUE_NONE, 'Prefix output files with namespace')
-            ->addOption('useFilenameAsSchemaName', null, InputOption::VALUE_NONE, 'Use template filename as schema filename');
+            ->addOption(
+                'useFilenameAsSchemaName',
+                null,
+                InputOption::VALUE_NONE,
+                'Use template filename as schema filename'
+            );
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
