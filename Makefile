@@ -22,7 +22,7 @@ fix-code-style:
 	${PHPCBF} src/ --standard=PSR12
 
 infection-testing: coverage
-	${INFECTION} --coverage=build/logs/phpunit --min-msi=74 --threads=`nproc`
+	${INFECTION} --coverage=build/logs/phpunit --min-msi=65 --threads=`nproc`
 
 static-analysis:
 	${PHPSTAN} analyse src --no-progress --level=7
