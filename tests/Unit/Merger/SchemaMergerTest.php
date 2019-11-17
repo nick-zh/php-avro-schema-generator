@@ -38,17 +38,7 @@ class SchemaMergerTest extends TestCase
         self::assertEquals($outputDirectory, $merger->getOutputDirectory());
     }
 
-    public function testGetAllTypesForSchemaTemplate()
-    {
-        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
-        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn('{}');
-        $merger = new SchemaMerger($schemaRegistry);
-
-        self::assertEquals([], $merger->getAllTypesForSchemaTemplate($schemaTemplate));
-    }
-
-    public function testGetAllTypesForSchemaTemplateThrowsException()
+    public function testGetResolvedSchemaTemplateThrowsException()
     {
         self::expectException(\AvroSchemaParseException::class);
 
@@ -57,10 +47,10 @@ class SchemaMergerTest extends TestCase
         $schemaTemplate->expects(self::once())->method('getSchemaDefinition')->willReturn('{"type": 1}');
         $merger = new SchemaMerger($schemaRegistry);
 
-        self::assertEquals([], $merger->getAllTypesForSchemaTemplate($schemaTemplate));
+        self::assertEquals([], $merger->getResolvedSchemaTemplate($schemaTemplate));
     }
 
-    public function testGetAllTypesForSchemaTemplateResolveEmbeddedException()
+    public function testGetResolvedSchemaTemplateResolveEmbeddedException()
     {
         self::expectException(SchemaMergerException::class);
         self::expectExceptionMessage(sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, 'com.example.Page'));
@@ -81,50 +71,56 @@ class SchemaMergerTest extends TestCase
             ->willReturn($definitionWithType);
         $merger = new SchemaMerger($schemaRegistry);
 
-        self::assertEquals([], $merger->getAllTypesForSchemaTemplate($schemaTemplate));
+        self::assertEquals([], $merger->getResolvedSchemaTemplate($schemaTemplate));
     }
 
-    public function testGetAllTypesForSchemaTemplateResolveEmbedded()
+    public function testGetResolvedSchemaTemplate()
     {
-        $definitionWithType = '{
+        $rootDefinition = '{
             "type": "record",
             "namespace": "com.example",
             "name": "Book",
             "fields": [
-                { "name": "items", "type": {"type": "array", "items": ["string","com.example.Page"] }, "default": [] }
+                { "name": "items", "type": {"type": "array", "items": "com.example.Page" }, "default": [] }
             ]
         }';
-        $replacedDefinition = '{
+        $subschemaDefinition = '{
             "type": "record",
             "namespace": "com.example",
-            "name": "Book",
+            "name": "Page",
             "fields": [
-                { "name": "items", "type": {"type": "array", "items": ["string"] }, "default": [] }
+                { "name": "number", "type": "int" }
             ]
         }';
-        $emptyTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $emptyTemplate
-            ->expects(self::exactly(2))
-            ->method('getSchemaDefinition')
-            ->willReturn('{}');
-        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-        $schemaTemplate
+
+        $expectedResult = str_replace('"com.example.Page"', $subschemaDefinition, $rootDefinition);
+
+        $subschemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $subschemaTemplate
             ->expects(self::once())
             ->method('getSchemaDefinition')
-            ->willReturn($definitionWithType);
-        $schemaTemplate->expects(self::once())
-            ->method('withSchemaDefinition')
-            ->with($replacedDefinition)
-            ->willReturn($emptyTemplate);
+            ->willReturn($subschemaDefinition);
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
         $schemaRegistry
             ->expects(self::once())
             ->method('getSchemaById')
             ->with('com.example.Page')
-            ->willReturn($emptyTemplate);
+            ->willReturn($subschemaTemplate);
+        $rootSchemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $rootSchemaTemplate
+            ->expects(self::once())
+            ->method('getSchemaDefinition')
+            ->willReturn($rootDefinition);
+        $rootSchemaTemplate
+            ->expects(self::once())
+            ->method('withSchemaDefinition')
+            ->with($expectedResult)
+            ->willReturn($rootSchemaTemplate);
+
+
         $merger = new SchemaMerger($schemaRegistry);
 
-        self::assertEquals(['com.example.Page'], $merger->getAllTypesForSchemaTemplate($schemaTemplate));
+        $merger->getResolvedSchemaTemplate($rootSchemaTemplate);
     }
 
     public function testMergeException()
@@ -157,7 +153,7 @@ class SchemaMergerTest extends TestCase
 
     public function testMerge()
     {
-        $definitionWithType = '{
+        $definition = '{
             "type": "record",
             "namespace": "com.example",
             "name": "Book",
@@ -169,7 +165,12 @@ class SchemaMergerTest extends TestCase
         $schemaTemplate
             ->expects(self::exactly(2))
             ->method('getSchemaDefinition')
-            ->willReturn($definitionWithType);
+            ->willReturn($definition);
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('withSchemaDefinition')
+            ->with($definition)
+            ->willReturn($schemaTemplate);
 
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
         $schemaRegistry
@@ -186,7 +187,7 @@ class SchemaMergerTest extends TestCase
 
     public function testMergeWithFilenameOption()
     {
-        $definitionWithType = '{
+        $definition = '{
             "type": "record",
             "namespace": "com.example",
             "name": "Book",
@@ -198,7 +199,12 @@ class SchemaMergerTest extends TestCase
         $schemaTemplate
             ->expects(self::exactly(2))
             ->method('getSchemaDefinition')
-            ->willReturn($definitionWithType);
+            ->willReturn($definition);
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('withSchemaDefinition')
+            ->with($definition)
+            ->willReturn($schemaTemplate);
         $schemaTemplate
             ->expects(self::once())
             ->method('getFilename')
@@ -217,37 +223,18 @@ class SchemaMergerTest extends TestCase
         rmdir('/tmp/foobar');
     }
 
-    public function testExportSchemaException()
-    {
-        self::expectException(SchemaMergerException::class);
-        self::expectExceptionMessage(sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, 'test'));
-
-        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
-        $schemaRegistry
-            ->expects(self::once())
-            ->method('getSchemaById')
-            ->willReturn(null);
-        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
-
-        $merger = new SchemaMerger($schemaRegistry, '/tmp/foobar');
-        $merger->exportSchema($schemaTemplate, ['test']);
-    }
-
     public function testExportSchema()
     {
         $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
         $schemaTemplate
-            ->expects(self::exactly(2))
+            ->expects(self::once())
             ->method('getSchemaDefinition')
             ->willReturn('{"name": "test"}');
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
-        $schemaRegistry
-            ->expects(self::once())
-            ->method('getSchemaById')
-            ->willReturn($schemaTemplate);
+
 
         $merger = new SchemaMerger($schemaRegistry);
-        $merger->exportSchema($schemaTemplate, ['test', 'test']);
+        $merger->exportSchema($schemaTemplate);
 
         self::assertFileExists('/tmp/test.avsc');
         unlink('/tmp/test.avsc');
