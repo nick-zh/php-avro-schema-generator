@@ -5,7 +5,8 @@ PHPUNIT =  ./vendor/bin/phpunit -c ./phpunit.xml
 PHPDBG =  phpdbg -qrr ./vendor/bin/phpunit -c ./phpunit.xml
 PHPSTAN  = ./vendor/bin/phpstan
 PHPCS = ./vendor/bin/phpcs --extensions=php
-PHPCBF = ./vendor/bin/phpcbf
+PHPCBF = ./vendor/bin/
+INFECTION = ./vendor/bin/infection
 CONSOLE = ./bin/console
 
 clean:
@@ -19,6 +20,9 @@ coverage:
 
 fix-code-style:
 	${PHPCBF} src/ --standard=PSR12
+
+infection-testing: coverage
+	${INFECTION} --coverage=build/logs/phpunit --min-msi=68 --threads=`nproc`
 
 static-analysis:
 	${PHPSTAN} analyse src --no-progress --level=7
@@ -39,6 +43,7 @@ help:
 	#   coverage (default)   Generate code coverage (html, clover)
 	#   fix-code-style       Fix code style
 	#   help                 You're looking at it!
+	#   infection-testing    Run infection/mutation testing
 	#   static-analysis      Run static analysis using phpstan
 	#   update-dependencies  Run composer update
 	#   install-dependencies Run composer install

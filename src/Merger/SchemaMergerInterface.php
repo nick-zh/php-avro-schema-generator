@@ -22,9 +22,9 @@ interface SchemaMergerInterface
 
     /**
      * @param  SchemaTemplateInterface $schemaTemplate
-     * @return array
+     * @return SchemaTemplateInterface
      */
-    public function getAllTypesForSchemaTemplate(SchemaTemplateInterface $schemaTemplate): array;
+    public function getResolvedSchemaTemplate(SchemaTemplateInterface $schemaTemplate): SchemaTemplateInterface;
 
     /**
      * @return int
@@ -33,10 +33,9 @@ interface SchemaMergerInterface
 
     /**
      * @param SchemaTemplateInterface $rootRootSchemaTemplate
-     * @param array $schemaTypes
      * @return void
      */
-    public function exportSchema(SchemaTemplateInterface $rootRootSchemaTemplate, array $schemaTypes): void;
+    public function exportSchema(SchemaTemplateInterface $rootRootSchemaTemplate): void;
 
     /**
      * @param  array $schemaDefinition

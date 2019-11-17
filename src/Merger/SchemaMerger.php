@@ -49,17 +49,17 @@ final class SchemaMerger implements SchemaMergerInterface
 
     /**
      * @param SchemaTemplateInterface $schemaTemplate
-     * @return array
+     * @return SchemaTemplateInterface
      * @throws AvroSchemaParseException
      * @throws SchemaMergerException
      */
-    public function getAllTypesForSchemaTemplate(SchemaTemplateInterface $schemaTemplate): array
+    public function getResolvedSchemaTemplate(SchemaTemplateInterface $schemaTemplate): SchemaTemplateInterface
     {
-        $types = [];
+        $definition = $schemaTemplate->getSchemaDefinition();
 
         do {
             $exceptionThrown = false;
-            $definition = $schemaTemplate->getSchemaDefinition();
+
             try {
                 \AvroSchema::parse($definition);
             } catch (AvroSchemaParseException $e) {
@@ -69,21 +69,21 @@ final class SchemaMerger implements SchemaMergerInterface
                 $exceptionThrown = true;
                 $schemaId = $this->getSchemaIdFromExceptionMessage($e->getMessage());
                 $embeddedTemplate = $this->schemaRegistry->getSchemaById($schemaId);
-
                 if (null === $embeddedTemplate) {
                     throw new SchemaMergerException(
                         sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, $schemaId)
                     );
                 }
 
-                $types[] = $schemaId;
-                $types = array_merge($types, $this->getAllTypesForSchemaTemplate($embeddedTemplate));
-                $definition =  $this->removeSchemaIdFromDefinition($definition, $schemaId);
-                $schemaTemplate = $schemaTemplate->withSchemaDefinition($definition);
+                $definition =  $this->replaceSchemaIdWithDefinition(
+                    $definition,
+                    $schemaId,
+                    $embeddedTemplate->getSchemaDefinition()
+                );
             }
         } while (true === $exceptionThrown);
 
-        return $types;
+        return $schemaTemplate->withSchemaDefinition($definition);
     }
 
     private function getSchemaIdFromExceptionMessage(string $exceptionMessage)
@@ -91,11 +91,13 @@ final class SchemaMerger implements SchemaMergerInterface
         return str_replace(' is not a schema we know about.', '', $exceptionMessage);
     }
 
-    private function removeSchemaIdFromDefinition(string $definition, string $schemaId)
+    private function replaceSchemaIdWithDefinition(string $definition, string $schemaId, string $embeddedDefinition)
     {
-        $definition = str_replace($schemaId, 'string', $definition);
-        $definition = str_replace('"string", "string"', '"string"', $definition);
-        return str_replace('"string","string"', '"string"', $definition);
+        $idString = '"' . $schemaId . '"';
+
+        $pos = strpos($definition, $idString);
+
+        return substr_replace($definition, $embeddedDefinition, $pos, strlen($idString));
     }
 
 
@@ -114,11 +116,11 @@ final class SchemaMerger implements SchemaMergerInterface
         /** @var SchemaTemplateInterface $schemaTemplate */
         foreach ($registry->getRootSchemas() as $schemaTemplate) {
             try {
-                $schemaTypes = $this->getAllTypesForSchemaTemplate($schemaTemplate);
+                $resolvedTemplate = $this->getResolvedSchemaTemplate($schemaTemplate);
             } catch (SchemaMergerException $e) {
                 throw $e;
             }
-            $this->exportSchema($schemaTemplate, $schemaTypes, $prefixWithNamespace, $useTemplateName);
+            $this->exportSchema($resolvedTemplate, $prefixWithNamespace, $useTemplateName);
             ++$mergedFiles;
         }
 
@@ -127,48 +129,18 @@ final class SchemaMerger implements SchemaMergerInterface
 
     /**
      * @param SchemaTemplateInterface $rootSchemaTemplate
-     * @param array                   $schemaTypes
      * @param boolean                 $prefixWithNamespace
      * @param boolean                 $useTemplateName
      * @return void
-     *@throws SchemaMergerException
      */
     public function exportSchema(
         SchemaTemplateInterface $rootSchemaTemplate,
-        array $schemaTypes,
         bool $prefixWithNamespace = false,
         bool $useTemplateName = false
     ): void {
-        $schemas = [];
-        $addedSchemas = [];
-
-        $schemaTypes = array_reverse($schemaTypes);
-
-        foreach ($schemaTypes as $schemaId) {
-            if (true === isset($addedSchemas[$schemaId])) {
-                continue;
-            }
-
-            $schemaTemplate = $this->schemaRegistry->getSchemaById($schemaId);
-
-            if (null === $schemaTemplate) {
-                throw new SchemaMergerException(
-                    sprintf(SchemaMergerException::UNKNOWN_SCHEMA_TYPE_EXCEPTION_MESSAGE, $schemaId)
-                );
-            }
-
-            $schemas[] = $this->transformExportSchemaDefinition(
-                json_decode($schemaTemplate->getSchemaDefinition(), true)
-            );
-
-            $addedSchemas[$schemaId] = true;
-        }
-
         $rootSchemaDefinition = $this->transformExportSchemaDefinition(
             json_decode($rootSchemaTemplate->getSchemaDefinition(), true)
         );
-
-        $schemas[] = $rootSchemaDefinition;
 
         $prefix = '';
 
@@ -187,10 +159,6 @@ final class SchemaMerger implements SchemaMergerInterface
         }
 
         $fileContents = json_encode($rootSchemaDefinition);
-
-        if (1 < count($schemas)) {
-            $fileContents = json_encode($schemas);
-        }
 
         file_put_contents($this->getOutputDirectory() . '/' . $schemaFilename, $fileContents);
     }
