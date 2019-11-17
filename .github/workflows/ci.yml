@@ -16,7 +16,7 @@ jobs:
         env:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
-      - name: Run coverage
+      - name: Install dependencies
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Run coverage
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make coverage
@@ -33,9 +33,9 @@ jobs:
         env:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
-      - name: Run coverage
+      - name: Install dependencies
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
-      - name: Run coverage
+      - name: Run infection testing
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make infection-testing
   static-analysis:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
         env:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
-      - name: Run coverage
+      - name: Install dependencies
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Run static analysis
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make static-analysis
@@ -57,7 +57,7 @@ jobs:
         env:
           USER_ID: 1001
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose up -d
-      - name: Run coverage
+      - name: Install dependencies
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make update-dependencies
       - name: Check code style
         run: cd ${GITHUB_WORKSPACE}/docker && docker-compose exec -T php make code-style
