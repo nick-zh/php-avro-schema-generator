@@ -16,6 +16,12 @@ RUN if [ ! -z "$HOST_USER_ID" ]; then \
         echo "ALL ALL=NOPASSWD: ALL" >> /etc/sudoers; \
     fi
 
+# PHP: Install php extensions
+RUN mkdir /phpIni && \
+    pecl channel-update pecl.php.net && \
+    pecl install pcov && \
+    php-ext-enable pcov
+
 # COMPOSER: install binary
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
 
