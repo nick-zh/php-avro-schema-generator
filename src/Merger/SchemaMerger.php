@@ -86,13 +86,16 @@ final class SchemaMerger implements SchemaMergerInterface
         return $schemaTemplate->withSchemaDefinition($definition);
     }
 
-    private function getSchemaIdFromExceptionMessage(string $exceptionMessage)
+    private function getSchemaIdFromExceptionMessage(string $exceptionMessage): string
     {
         return str_replace(' is not a schema we know about.', '', $exceptionMessage);
     }
 
-    private function replaceSchemaIdWithDefinition(string $definition, string $schemaId, string $embeddedDefinition)
-    {
+    private function replaceSchemaIdWithDefinition(
+        string $definition,
+        string $schemaId,
+        string $embeddedDefinition
+    ): string {
         $idString = '"' . $schemaId . '"';
 
         $pos = strpos($definition, $idString);
@@ -144,14 +147,14 @@ final class SchemaMerger implements SchemaMergerInterface
 
         $prefix = '';
 
-        if (true === $prefixWithNamespace) {
+        if (true === $prefixWithNamespace && false === $rootSchemaTemplate->isPrimitive()) {
             $prefix = $rootSchemaDefinition['namespace'] . '.';
         }
 
-        $schemaFilename = $prefix . $rootSchemaDefinition['name'] . '.' . Avro::FILE_EXTENSION;
+        $schemaFilename = $rootSchemaTemplate->getFilename();
 
-        if (true === $useTemplateName) {
-            $schemaFilename = $rootSchemaTemplate->getFilename();
+        if (false === $useTemplateName && false === $rootSchemaTemplate->isPrimitive()) {
+            $schemaFilename = $prefix . $rootSchemaDefinition['name'] . '.' . Avro::FILE_EXTENSION;
         }
 
         if (false === file_exists($this->getOutputDirectory())) {
@@ -164,8 +167,8 @@ final class SchemaMerger implements SchemaMergerInterface
     }
 
     /**
-     * @param  array $schemaDefinition
-     * @return array
+     * @param  array<string,mixed> $schemaDefinition
+     * @return array<string,mixed>
      */
     public function transformExportSchemaDefinition(array $schemaDefinition): array
     {

@@ -32,13 +32,14 @@ class SchemaRegistryTest extends TestCase
             'com.example.Collection',
             'com.example.Page',
             'com.example.Library',
+            'string'
         ];
 
         $schemaDir = __DIR__ . '/../../../example/schemaTemplates';
         $registry = (new SchemaRegistry())->addSchemaTemplateDirectory($schemaDir)->load();
         $schemas = $registry->getSchemas();
 
-        self::assertCount(5, $schemas);
+        self::assertCount(6, $schemas);
 
         /** @var SchemaTemplateInterface $schema */
         foreach ($schemas as $schema) {
@@ -54,7 +55,7 @@ class SchemaRegistryTest extends TestCase
 
         $rootSchemas = $registry->getRootSchemas();
 
-        self::assertCount(1, $rootSchemas);
+        self::assertCount(2, $rootSchemas);
 
         foreach ($rootSchemas as $rootSchema) {
             self::assertInstanceOf(SchemaTemplateInterface::class, $rootSchema);

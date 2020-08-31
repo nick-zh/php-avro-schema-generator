@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace NickZh\PhpAvroSchemaGenerator\Registry;
 
+use NickZh\PhpAvroSchemaGenerator\PhpClass\PhpClass;
+
 interface ClassRegistryInterface
 {
 
@@ -14,7 +16,7 @@ interface ClassRegistryInterface
     public function addClassDirectory(string $classDirectory): ClassRegistryInterface;
 
     /**
-     * @return array
+     * @return array<string,int>
      */
     public function getClassDirectories(): array;
 
@@ -24,7 +26,7 @@ interface ClassRegistryInterface
     public function load(): ClassRegistryInterface;
 
     /**
-     * @return array
+     * @return PhpClass[]
      */
     public function getClasses(): array;
 }

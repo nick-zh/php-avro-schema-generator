@@ -11,17 +11,16 @@ use NickZh\PhpAvroSchemaGenerator\Schema\SchemaTemplateInterface;
 
 final class SchemaRegistry implements SchemaRegistryInterface
 {
-
     public const SCHEMA_LEVEL_ROOT = 'root';
     public const SCHEMA_LEVEL_CHILD = 'child';
 
     /**
-     * @var array
+     * @var array<string,int>
      */
     private $schemaDirectories = [];
 
     /**
-     * @var array
+     * @var array<string, SchemaTemplateInterface>
      */
     private $schemas = [];
 
@@ -38,17 +37,17 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @return array
+     * @return array<int,SchemaTemplateInterface>
      */
     public function getRootSchemas(): array
     {
         $rootSchemas = [];
 
         /**
- * @var SchemaTemplate $schema
-*/
+         * @var SchemaTemplate $schema
+        */
         foreach ($this->getSchemas() as $schema) {
-            if (self::SCHEMA_LEVEL_ROOT == $schema->getSchemaLevel()) {
+            if (self::SCHEMA_LEVEL_ROOT == $schema->getSchemaLevel() || $schema->isPrimitive()) {
                 $rootSchemas[] = $schema;
             }
         }
@@ -57,7 +56,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @return array
+     * @return array<string,int>
      */
     public function getSchemaDirectories(): array
     {
@@ -90,7 +89,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @return array
+     * @return array<string, SchemaTemplateInterface>
      */
     public function getSchemas(): array
     {
@@ -131,25 +130,31 @@ final class SchemaRegistry implements SchemaRegistryInterface
         }
 
         $schemaData = json_decode($fileContent, true);
-        $schemaId = $this->getSchemaId($schemaData);
-        $this->schemas[$schemaId] = (new SchemaTemplate())
+        $template = (new SchemaTemplate())
             ->withFilename($fileInfo->getBasename())
-            ->withSchemaId($schemaId)
             ->withSchemaDefinition($fileContent)
             ->withSchemaLevel($this->getSchemaLevel($schemaData));
+
+        $schemaId = $this->getSchemaId($schemaData, $template);
+        $this->schemas[$schemaId] = $template->withSchemaId($schemaId);
     }
 
     /**
-     * @param  array $schemaData
+     * @param array<string,string> $schemaData
+     * @param SchemaTemplateInterface $template
      * @return string
      */
-    public function getSchemaId(array $schemaData): string
+    public function getSchemaId(array $schemaData, SchemaTemplateInterface $template): string
     {
+        if (true === $template->isPrimitive()) {
+            return $schemaData['type'];
+        }
+
         return $schemaData['namespace'] . '.' . $schemaData['name'];
     }
 
     /**
-     * @param  array $schemaData
+     * @param  array<string,string> $schemaData
      * @return string
      */
     private function getSchemaLevel(array $schemaData): string

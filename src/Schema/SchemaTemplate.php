@@ -4,6 +4,19 @@ namespace NickZh\PhpAvroSchemaGenerator\Schema;
 
 final class SchemaTemplate implements SchemaTemplateInterface
 {
+    /**
+     * @var array<string,int>
+     */
+    public const AVRO_PRIMITIVE_TYPES = [
+        'null' => 1,
+        'boolean' => 1,
+        'int' => 1,
+        'long' => 1,
+        'float' => 1,
+        'double' => 1,
+        'bytes' => 1,
+        'string' => 1,
+    ];
 
     /**
      * @var string
@@ -107,5 +120,19 @@ final class SchemaTemplate implements SchemaTemplateInterface
         $new->filename = $filename;
 
         return $new;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPrimitive(): bool
+    {
+        $fields = json_decode($this->getSchemaDefinition(), true);
+
+        if (true === isset($fields['type'])) {
+            return array_key_exists($fields['type'], self::AVRO_PRIMITIVE_TYPES);
+        }
+
+        return false;
     }
 }

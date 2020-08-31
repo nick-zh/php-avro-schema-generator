@@ -1,13 +1,13 @@
-.PHONY: clean code-style coverage help static-analysis update-dependencies install-dependencies
+.PHONY: clean code-style coverage help static-analysis update-dependencies install-dependencies infection-testing
 .DEFAULT_GOAL := coverage
 
 PHPUNIT =  ./vendor/bin/phpunit -c ./phpunit.xml
-PHPDBG =  phpdbg -qrr ./vendor/bin/phpunit -c ./phpunit.xml
 PHPSTAN  = ./vendor/bin/phpstan
 PHPCS = ./vendor/bin/phpcs --extensions=php
 PHPCBF = ./vendor/bin/
 INFECTION = ./vendor/bin/infection
 CONSOLE = ./bin/console
+COVCHECK = ./vendor/bin/coverage-check
 
 clean:
 	rm -rf ./build ./vendor
@@ -16,16 +16,18 @@ code-style:
 	${PHPCS} --report-full --report-gitblame --standard=PSR12 ./src
 
 coverage:
-	${PHPDBG}
+	${PHPUNIT} && ${COVCHECK} ./build/logs/phpunit/clover.xml 100
+	cp ./build/logs/phpunit/clover.xml ./
 
 fix-code-style:
 	${PHPCBF} src/ --standard=PSR12
 
-infection-testing: coverage
+infection-testing:
+	make coverage
 	${INFECTION} --coverage=build/logs/phpunit --min-msi=68 --threads=`nproc`
 
 static-analysis:
-	${PHPSTAN} analyse src --no-progress --level=7
+	${PHPSTAN} analyse --no-progress
 
 update-dependencies:
 	composer update

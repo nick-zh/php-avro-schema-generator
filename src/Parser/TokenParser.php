@@ -25,7 +25,7 @@ class TokenParser
     /**
      * The token list.
      *
-     * @var array
+     * @var array<int,mixed>
      */
     private $tokens;
 
@@ -53,6 +53,9 @@ class TokenParser
      */
     private $pointer = 0;
 
+    /**
+     * @var string[]
+     */
     private $ignoredTypes = array(
         'null' => 'null',
         'bool' => 'boolean',
@@ -122,13 +125,15 @@ class TokenParser
                 $index = 2;
                 while (true) {
                     if (true === is_string($this->tokens[$i + $index])) {
-                        return $this->namespace;
+                        break 2;
                     }
                     $this->namespace .= $this->tokens[$i + $index][1];
                     ++$index;
                 }
             }
         }
+
+        return $this->namespace;
     }
 
     /**
@@ -136,7 +141,7 @@ class TokenParser
      *
      * @param string $namespaceName The namespace name of the reflected class.
      *
-     * @return array A list with all found use statements.
+     * @return array<string|int,mixed> A list with all found use statements.
      * @codeCoverageIgnore
      */
     public function parseUseStatements($namespaceName)
@@ -162,6 +167,11 @@ class TokenParser
         return $statements;
     }
 
+    /**
+     * @param class-string $classPath
+     * @return array<int, PhpClassProperty>
+     * @throws \ReflectionException
+     */
     public function getProperties(string $classPath): array
     {
         $properties = [];
@@ -169,8 +179,8 @@ class TokenParser
         $reflectionClass = new ReflectionClass($classPath);
 
         foreach ($reflectionClass->getProperties() as $property) {
-            $simpleType = $this->getPropertyClass($property, false);
-            $nestedType = $this->getPropertyClass($property, true);
+            $simpleType = (string) $this->getPropertyClass($property, false);
+            $nestedType = (string) $this->getPropertyClass($property, true);
             $properties[] = new PhpClassProperty($property->getName(), $simpleType, $nestedType);
         }
 
@@ -190,7 +200,7 @@ class TokenParser
     public function getPropertyClass(ReflectionProperty $property, bool $ignorePrimitive = true)
     {
         // Get the content of the @var annotation
-        if (preg_match('/@var\s+([^\s]+)/', $property->getDocComment(), $matches)) {
+        if (preg_match('/@var\s+([^\s]+)/', (string) $property->getDocComment(), $matches)) {
             list(, $type) = $matches;
         } else {
             return null;
@@ -265,7 +275,7 @@ class TokenParser
         $alias = ($pos = strpos($type, '\\')) === false ? $type : substr($type, 0, $pos);
         $loweredAlias = strtolower($alias);
         // Retrieve "use" statements
-        $parser = new TokenParser(file_get_contents($class->getFileName()));
+        $parser = new TokenParser((string) file_get_contents((string) $class->getFileName()));
         $uses = $parser->parseUseStatements($class->getNamespaceName());
 
         if (isset($uses[$loweredAlias])) {
@@ -284,7 +294,7 @@ class TokenParser
             // No namespace
             return $type;
         }
-        if (version_compare(phpversion(), '5.4.0', '<')) {
+        if (version_compare((string) phpversion(), '5.4.0', '<')) {
             return null;
         } else {
             // If all fail, try resolving through related traits
@@ -341,7 +351,7 @@ class TokenParser
      * @param boolean $docCommentIsComment If TRUE then a doc comment is considered a comment and skipped.
      *                                     If FALSE then only whitespace and normal comments are skipped.
      *
-     * @return array|null The token if exists, null otherwise.
+     * @return array<int,mixed>|null The token if exists, null otherwise.
      */
     private function next($docCommentIsComment = true)
     {
@@ -365,7 +375,7 @@ class TokenParser
     /**
      * Parses a single use statement.
      *
-     * @return array A list with all found class names for a use statement.
+     * @return array<string,class-string> A list with all found class names for a use statement.
      * @codeCoverageIgnore
      */
     private function parseUseStatement()

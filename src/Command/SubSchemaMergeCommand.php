@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SubSchemaMergeCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('avro:subschema:merge')
@@ -32,7 +32,7 @@ class SubSchemaMergeCommand extends Command
             );
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Merging schema files');
         $templateDirectory = $this->getPath($input->getArgument('templateDirectory'));
@@ -45,13 +45,15 @@ class SubSchemaMergeCommand extends Command
         $merger = new SchemaMerger($registry, $outputDirectory);
 
         $result = $merger->merge(
-            $input->getOption('prefixWithNamespace'),
-            $input->getOption('useFilenameAsSchemaName')
+            (bool) $input->getOption('prefixWithNamespace'),
+            (bool) $input->getOption('useFilenameAsSchemaName')
         );
 
 
         // retrieve the argument value using getArgument()
         $output->writeln(sprintf('Merged %d root schema files', $result));
+
+        return 0;
     }
 
     /**
