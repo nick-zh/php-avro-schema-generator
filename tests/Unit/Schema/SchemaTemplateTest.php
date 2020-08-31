@@ -44,4 +44,25 @@ class SchemaTemplateTest extends TestCase
         self::assertInstanceOf(SchemaTemplateInterface::class, $template);
         self::assertEquals('test', $template->getFilename());
     }
+
+    public function testIsPrimitiveTrue()
+    {
+        $template = (new SchemaTemplate())->withSchemaDefinition('{"type":"string"}');
+
+        self::assertTrue($template->isPrimitive($template));
+    }
+
+    public function testIsPrimitiveFalse()
+    {
+        $template = (new SchemaTemplate())->withSchemaDefinition('{"type":"record"}');
+
+        self::assertFalse($template->isPrimitive($template));
+    }
+
+    public function testIsPrimitiveFalseOnMissingType()
+    {
+        $template = (new SchemaTemplate())->withSchemaDefinition('{"foo":"bar"}');
+
+        self::assertFalse($template->isPrimitive($template));
+    }
 }

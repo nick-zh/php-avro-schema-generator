@@ -47,4 +47,9 @@ interface SchemaTemplateInterface
      * @return SchemaTemplateInterface
      */
     public function withFilename(string $filename): SchemaTemplateInterface;
+
+    /**
+     * @return bool
+     */
+    public function isPrimitive(): bool;
 }

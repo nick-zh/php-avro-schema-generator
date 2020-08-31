@@ -43,8 +43,9 @@ interface SchemaRegistryInterface
 
 
     /**
-     * @param  array<string,string> $schemaData
+     * @param array<string,string> $schemaData
+     * @param SchemaTemplateInterface $template
      * @return string
      */
-    public function getSchemaId(array $schemaData): string;
+    public function getSchemaId(array $schemaData, SchemaTemplateInterface $template): string;
 }

@@ -147,13 +147,13 @@ final class SchemaMerger implements SchemaMergerInterface
 
         $prefix = '';
 
-        if (true === $prefixWithNamespace) {
+        if (true === $prefixWithNamespace && false === $rootSchemaTemplate->isPrimitive()) {
             $prefix = $rootSchemaDefinition['namespace'] . '.';
         }
 
         $schemaFilename = $rootSchemaTemplate->getFilename();
 
-        if (false === $useTemplateName) {
+        if (false === $useTemplateName && false === $rootSchemaTemplate->isPrimitive()) {
             $schemaFilename = $prefix . $rootSchemaDefinition['name'] . '.' . Avro::FILE_EXTENSION;
         }
 

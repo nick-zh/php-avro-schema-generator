@@ -15,7 +15,6 @@ use PHPUnit\Framework\TestCase;
  */
 class SchemaMergerTest extends TestCase
 {
-
     public function testGetSchemaRegistry()
     {
         $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
@@ -185,6 +184,39 @@ class SchemaMergerTest extends TestCase
         rmdir('/tmp/foobar');
     }
 
+    public function testMergePrimitive()
+    {
+        $definition = '{
+            "type": "string"
+        }';
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate
+            ->expects(self::exactly(2))
+            ->method('getSchemaDefinition')
+            ->willReturn($definition);
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('withSchemaDefinition')
+            ->with($definition)
+            ->willReturn($schemaTemplate);
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('getFilename')
+            ->willReturn('primitive-type.avsc');
+
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+        $schemaRegistry
+            ->expects(self::once())
+            ->method('getRootSchemas')
+            ->willReturn([$schemaTemplate]);
+        $merger = new SchemaMerger($schemaRegistry, '/tmp/foobar');
+        $merger->merge(false, true);
+
+        self::assertFileExists('/tmp/foobar/primitive-type.avsc');
+        unlink('/tmp/foobar/primitive-type.avsc');
+        rmdir('/tmp/foobar');
+    }
+
     public function testMergeWithFilenameOption()
     {
         $definition = '{
@@ -235,6 +267,31 @@ class SchemaMergerTest extends TestCase
 
         $merger = new SchemaMerger($schemaRegistry);
         $merger->exportSchema($schemaTemplate);
+
+        self::assertFileExists('/tmp/test.avsc');
+        unlink('/tmp/test.avsc');
+    }
+
+    public function testExportSchemaPrimitiveWithWrongOptions()
+    {
+        $schemaTemplate = $this->getMockForAbstractClass(SchemaTemplateInterface::class);
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('getSchemaDefinition')
+            ->willReturn('{"type": "string"}');
+        $schemaTemplate
+            ->expects(self::exactly(2))
+            ->method('isPrimitive')
+            ->willReturn(true);
+
+        $schemaTemplate
+            ->expects(self::once())
+            ->method('getFilename')
+            ->willReturn('test.avsc');
+        $schemaRegistry = $this->getMockForAbstractClass(SchemaRegistryInterface::class);
+
+        $merger = new SchemaMerger($schemaRegistry);
+        $merger->exportSchema($schemaTemplate, true);
 
         self::assertFileExists('/tmp/test.avsc');
         unlink('/tmp/test.avsc');
