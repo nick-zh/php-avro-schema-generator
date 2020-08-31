@@ -16,8 +16,8 @@ code-style:
 	${PHPCS} --report-full --report-gitblame --standard=PSR12 ./src
 
 coverage:
-	${PHPUNIT} && ${COVCHECK} ./build/phpunit/clover.xml 100
-	cp ./build/phpunit/clover.xml ./
+	${PHPUNIT} && ${COVCHECK} ./build/logs/phpunit/clover.xml 100
+	cp ./build/logs/phpunit/clover.xml ./
 
 fix-code-style:
 	${PHPCBF} src/ --standard=PSR12
