@@ -9,7 +9,7 @@ COPY dev/php/files/bin/ /usr/local/bin/
 
 # SYS: Install required packages
 RUN apk --no-cache upgrade && \
-    apk --no-cache add bash git sudo make
+    apk --no-cache add bash git sudo make autoconf gcc g++
 
 RUN if [ ! -z "$HOST_USER_ID" ]; then \
         adduser -u $HOST_USER_ID -D -H $HOST_USER && \
