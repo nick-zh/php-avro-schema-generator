@@ -17,6 +17,7 @@ code-style:
 
 coverage:
 	${PHPUNIT} && ${COVCHECK} clover.xml 100
+	cp ./build/phpunit/clover.xml ./
 
 fix-code-style:
 	${PHPCBF} src/ --standard=PSR12
