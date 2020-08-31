@@ -1,4 +1,4 @@
-.PHONY: clean code-style coverage help static-analysis update-dependencies install-dependencies
+.PHONY: clean code-style coverage help static-analysis update-dependencies install-dependencies infection-testing
 .DEFAULT_GOAL := coverage
 
 PHPUNIT =  ./vendor/bin/phpunit -c ./phpunit.xml
@@ -21,7 +21,8 @@ coverage:
 fix-code-style:
 	${PHPCBF} src/ --standard=PSR12
 
-infection-testing: coverage
+infection-testing:
+	make coverage
 	${INFECTION} --coverage=build/logs/phpunit --min-msi=68 --threads=`nproc`
 
 static-analysis:
