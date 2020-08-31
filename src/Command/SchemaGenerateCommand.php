@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SchemaGenerateCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('avro:schema:generate')
@@ -24,7 +24,7 @@ class SchemaGenerateCommand extends Command
         ;
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Generating schema files');
 
@@ -43,6 +43,8 @@ class SchemaGenerateCommand extends Command
 
         // retrieve the argument value using getArgument()
         $output->writeln(sprintf('Generated %d schema files', $result));
+
+        return 0;
     }
 
     /**

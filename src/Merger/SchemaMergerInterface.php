@@ -38,8 +38,8 @@ interface SchemaMergerInterface
     public function exportSchema(SchemaTemplateInterface $rootRootSchemaTemplate): void;
 
     /**
-     * @param  array $schemaDefinition
-     * @return array
+     * @param  array<string,mixed> $schemaDefinition
+     * @return array<string,mixed>
      */
     public function transformExportSchemaDefinition(array $schemaDefinition): array;
 }

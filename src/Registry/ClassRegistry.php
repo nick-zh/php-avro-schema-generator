@@ -16,12 +16,12 @@ final class ClassRegistry implements ClassRegistryInterface
 {
 
     /**
-     * @var array
+     * @var array<string,int>
      */
     protected $classDirectories = [];
 
     /**
-     * @var array
+     * @var PhpClass[]
      */
     protected $classes = [];
 
@@ -37,7 +37,7 @@ final class ClassRegistry implements ClassRegistryInterface
     }
 
     /**
-     * @return array
+     * @return array<string,int>
      */
     public function getClassDirectories(): array
     {
@@ -70,7 +70,7 @@ final class ClassRegistry implements ClassRegistryInterface
     }
 
     /**
-     * @return array|PhpClass[]
+     * @return PhpClass[]
      */
     public function getClasses(): array
     {
@@ -103,7 +103,9 @@ final class ClassRegistry implements ClassRegistryInterface
             return;
         }
 
-        $properties = $parser->getProperties($parser->getNamespace() . '\\' . $parser->getClassName());
+        /** @var class-string $className */
+        $className = $parser->getNamespace() . '\\' . $parser->getClassName();
+        $properties = $parser->getProperties($className);
         $this->classes[] = new PhpClass(
             $parser->getClassName(),
             $parser->getNamespace(),

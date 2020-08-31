@@ -12,5 +12,8 @@ interface PhpClassInterface
 
     public function getClassBody(): string;
 
+    /**
+     * @return PhpClassProperty[]
+     */
     public function getClassProperties(): array;
 }

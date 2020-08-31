@@ -19,12 +19,12 @@ interface SchemaGeneratorInterface
     public function getOutputDirectory(): string;
 
     /**
-     * @return array
+     * @return array<string,string|false>
      */
     public function generate(): array;
 
     /**
-     * @param array $schemas
+     * @param array<string,string|false> $schemas
      * @return int
      */
     public function exportSchemas(array $schemas): int;

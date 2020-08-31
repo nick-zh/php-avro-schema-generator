@@ -12,6 +12,9 @@ use NickZh\PhpAvroSchemaGenerator\Registry\ClassRegistryInterface;
 final class SchemaGenerator implements SchemaGeneratorInterface
 {
 
+    /**
+     * @var int[]
+     */
     private $typesToSkip = [
         'null' => 1,
         'object' => 1,
@@ -53,7 +56,7 @@ final class SchemaGenerator implements SchemaGeneratorInterface
     }
 
     /**
-     * @return array
+     * @return array<string,string|false>
      */
     public function generate(): array
     {
@@ -93,7 +96,7 @@ final class SchemaGenerator implements SchemaGeneratorInterface
     }
 
     /**
-     * @param array $schemas
+     * @param array<string,string|false> $schemas
      * @return int
      */
     public function exportSchemas(array $schemas): int

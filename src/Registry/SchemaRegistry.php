@@ -16,12 +16,12 @@ final class SchemaRegistry implements SchemaRegistryInterface
     public const SCHEMA_LEVEL_CHILD = 'child';
 
     /**
-     * @var array
+     * @var array<string,int>
      */
     private $schemaDirectories = [];
 
     /**
-     * @var array
+     * @var array<string, SchemaTemplateInterface>
      */
     private $schemas = [];
 
@@ -38,7 +38,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @return array
+     * @return array<int,SchemaTemplateInterface>
      */
     public function getRootSchemas(): array
     {
@@ -57,7 +57,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @return array
+     * @return array<string,int>
      */
     public function getSchemaDirectories(): array
     {
@@ -90,7 +90,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @return array
+     * @return array<string, SchemaTemplateInterface>
      */
     public function getSchemas(): array
     {
@@ -140,7 +140,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @param  array $schemaData
+     * @param  array<string,string> $schemaData
      * @return string
      */
     public function getSchemaId(array $schemaData): string
@@ -149,7 +149,7 @@ final class SchemaRegistry implements SchemaRegistryInterface
     }
 
     /**
-     * @param  array $schemaData
+     * @param  array<string,string> $schemaData
      * @return string
      */
     private function getSchemaLevel(array $schemaData): string
