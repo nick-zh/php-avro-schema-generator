@@ -10,7 +10,7 @@
   "require": {
     "ext-json": "*",
     "symfony/console": "^4.3",
-    "flix-tech/avro-php": "^3.0"
+    "flix-tech/avro-php": "^3.0|^4.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.3",
