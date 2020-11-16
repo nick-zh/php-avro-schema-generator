@@ -1,3 +1,6 @@
+# Deprecation Notice
+This package has been deprecated in favour of [php-kafka/php-avro-schema-generator](https://github.com/php-kafka/php-avro-schema-generator)
+
 # Avro schema generator for PHP
 [![Actions Status](https://github.com/nick-zh/php-avro-schema-generator/workflows/CI/badge.svg)](https://github.com/nick-zh/php-avro-schema-generator/workflows/CI/badge.svg)
 [![Maintainability](https://api.codeclimate.com/v1/badges/937e14c63beb08885c70/maintainability)](https://codeclimate.com/github/nick-zh/php-avro-schema-generator/maintainability)
